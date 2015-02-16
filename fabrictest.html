@@ -10,18 +10,12 @@
     
 <div style="margin-left:20px">
     <p>Last updated: 14.02.2015</p>
-    
-    <div>
-        <button class="btn btn-default" onclick="zoomIn()">+</button>
-        <span id="zoom">100%</span>
-        <button class="btn btn-default" onclick="zoomOut()">-</button>
-    </div>
 </div>
-    
-<canvas id="canvas" width="1200" height="800" style="margin:20px">
-This text is displayed if your browser does not support HTML5 Canvas.
-</canvas>
-    
+<div id="canvasWrapper">
+    <canvas id="canvas" width="1200" height="800" style="margin:20px">
+    This text is displayed if your browser does not support HTML5 Canvas.
+    </canvas>
+</div>
 <script type="text/javascript">
     
 //Declaring and initializing variables
@@ -44,19 +38,6 @@ for (var i = 0; i < (1200 / grid); i++) {
   canvas.add(new fabric.Line([ 0, i * grid, 1200, i * grid], gridOptions));
 }
 
-function zoomIn() {
-    zoomLevel = canvas.getZoom();
-    canvas.setZoom(zoomLevel += 0.25);
-    document.getElementById("zoom").innerHTML = zoomLevel*100 + "%";
-    console.log("Zoomed in:" + canvas.getZoom());
-}
-
-function zoomOut() {
-    zoomLevel = canvas.getZoom();
-    canvas.setZoom(zoomLevel -= 0.25);
-    document.getElementById("zoom").innerHTML = zoomLevel*100 + "%";
-    console.log("Zoomed out:" + canvas.getZoom());
-}
 //When clicking down the mouse button
 canvas.on('mouse:down', function(options){
     if(!objectSelected) {
