@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Canvas Drag and Drop Test</title>
+<script type="text/javascript" src="fabric.js"></script>
+<link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.3.0/css/bootstrap.min.css">
+</head>
+<body>
+    
+<div style="margin-left:20px">
+    <p>Last updated: 14.02.2015</p>
+    
+    <div>
+        <button class="btn btn-default" onclick="zoomIn()">+</button>
+        <span id="zoom">100%</span>
+        <button class="btn btn-default" onclick="zoomOut()">-</button>
+    </div>
+</div>
+    
+<canvas id="canvas" width="1200" height="800" style="margin:20px">
+This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+    
+<script type="text/javascript">
+    
+//Declaring and initializing variables
+var linesArray = [];    //Our lines that represents walls
+var canvas = new fabric.Canvas('canvas', { selection: false, width: this.width, height: this.height });
+
+var grid = 50;
+var gridcolor = '#ccc';
+var gridOptions = {
+    stroke: '#ccc',
+    strokeWidth: 1,
+    selectable: false,
+    evented: false
+};
+var objectSelected = false;
+
+// adding a grid
+for (var i = 0; i < (1200 / grid); i++) {
+  canvas.add(new fabric.Line([ i * grid, 0, i * grid, 1200], gridOptions));
+  canvas.add(new fabric.Line([ 0, i * grid, 1200, i * grid], gridOptions));
+}
+
+function zoomIn() {
+    zoomLevel = canvas.getZoom();
+    canvas.setZoom(zoomLevel += 0.25);
+    document.getElementById("zoom").innerHTML = zoomLevel*100 + "%";
+    console.log("Zoomed in:" + canvas.getZoom());
+}
+
+function zoomOut() {
+    zoomLevel = canvas.getZoom();
+    canvas.setZoom(zoomLevel -= 0.25);
+    document.getElementById("zoom").innerHTML = zoomLevel*100 + "%";
+    console.log("Zoomed out:" + canvas.getZoom());
+}
+//When clicking down the mouse button
+canvas.on('mouse:down', function(options){
+    if(!objectSelected) {
+        console.log("Drawing a new line");
+        isDown = true;
+        var pointer = canvas.getPointer(options.e);
+        var pointX = Math.round(pointer.x/grid)*grid;
+        var pointY = Math.round(pointer.y/grid)*grid;
+        var points = [ pointX, pointY, pointX, pointY ];
+        line = new fabric.Line(points, {
+        strokeWidth: 5,
+        stroke: 'black',
+        selectable: false,
+        lockScalingX: false,
+        lockScalingY: false,
+        lockUniScaling: false,
+        lockScalingFlip: true,
+        hasControls: true,
+        strokeLineCap: 'square',
+        perPixelTargetFind: true,   
+        rotatingPointOffset: 50, //in pixels + offset
+        visible: true,
+        padding: 10
+        }); 
+        canvas.add(line);
+     }
+});
+
+
+//When moving the mouse around
+canvas.on('mouse:move', function(options){
+  if (!isDown) return;
+  if (objectSelected) return;
+  
+  //If here: Assuming we're drawing a line
+  var pointer = canvas.getPointer(options.e);
+  line.set({ x2: Math.round(pointer.x/grid)*grid, y2: Math.round(pointer.y/grid)*grid });
+  canvas.renderAll();
+});
+
+//When releasing mouse button
+canvas.on('mouse:up', function(options){
+    isDown = false;
+    if(objectSelected) return;
+    
+    //If objectSelected is false, we assume we have drawn a line
+    //We don't want to add points, so line width, height or both must be > 0
+    if(line.width > 0 || line.height > 0) {
+        line.selectable = true;
+        canvas.add(line);
+        linesArray.push(line);
+    }
+    console.log(linesArray);
+});
+
+//When mouse is hovering an object
+canvas.on('mouse:over', function(options) {
+    //if(options.target !== null) hoverObject = true;
+});
+
+//When mouse hovering off an object
+canvas.on('mouse:out', function(options) {
+   //hoverObject = false; 
+}); 
+
+//When an object is selected
+canvas.on('object:selected', function(options) {
+    objectSelected = true;
+    console.log("I have now selected an object");
+});
+
+//Selection cleared, or deselected an object
+canvas.on('selection:cleared', function(options) {
+    objectSelected = false;
+    console.log("I cleared my selection");
+});
+
+//When moving an object
+// snap to grid function
+canvas.on('object:moving', function(options) { 
+  options.target.set({
+    left: Math.round(options.target.left / grid) * grid,
+    top: Math.round(options.target.top / grid) * grid
+  });
+});
+</script>
+</body>
+</html>
