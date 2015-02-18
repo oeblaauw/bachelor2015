@@ -5,11 +5,35 @@
 <title>Canvas Drag and Drop Test</title>
 <script type="text/javascript" src="fabric.js"></script>
 <link rel="stylesheet" href="//cdn.jsdelivr.net/bootstrap/3.3.0/css/bootstrap.min.css">
+<style>
+    #selectionMenu {
+        padding: 10px;
+    }
+    #color-select {
+        width: 50px;
+        height: 20px;
+        background-color: black;
+        padding: 10px;
+    };
+</style>
 </head>
 <body>
     
-<div style="margin-left:20px">
-    <p>Last updated: 14.02.2015</p>
+<div style="float:right">
+    <p>Last updated: 18.02.2015</p>
+
+    <div id="selectionMenu" style="display:none">
+        <h3>Valg:</h3>
+        <button id="btn-delete" class="btn btn-default">Slett</button><br/>
+         <select id="select-material">
+          <option value="gips">Gips</option>
+          <option value="tre">Tre</option>
+          <option value="betong">Betong</option>
+          <option value="glass">Glass</option>
+        </select> 
+        <!--<input id="txt-material" type="text" name="material">--><br/>
+        <button onclick="updateOptions()">Oppdater</button>
+    </div>
 </div>
 <div id="canvasWrapper">
     <canvas id="canvas" width="1200" height="800" style="margin:20px">
@@ -18,10 +42,39 @@
 </div>
 <script type="text/javascript">
     
+    function updateOptions() {
+        var selector = document.getElementById("select-material");
+        var newMat = selector.options[selector.selectedIndex].value;
+        var color;
+        switch(newMat) {
+            case 'gips':
+                color = 'black';
+                break;
+            case 'tre':
+                color = 'brown';
+                break;
+            case 'betong':
+                color = 'gray';
+                break;
+            case 'glass':
+                color = 'blue';
+                break;
+            default:
+                color = 'black';
+                break;
+        }
+        if(canvas.getActiveObject()) {
+            var obj = canvas.getActiveObject();
+            obj.set({
+                material: newMat,
+                stroke: color
+            });
+            canvas.renderAll();
+        }
+    }
 //Declaring and initializing variables
 var linesArray = [];    //Our lines that represents walls
 var canvas = new fabric.Canvas('canvas', { selection: false, width: this.width, height: this.height });
-
 var grid = 50;
 var gridcolor = '#ccc';
 var gridOptions = {
@@ -60,7 +113,8 @@ canvas.on('mouse:down', function(options){
         perPixelTargetFind: true,   
         rotatingPointOffset: 50, //in pixels + offset
         visible: true,
-        padding: 10
+        padding: 10,
+        material: 'gips'
         }); 
         canvas.add(line);
      }
@@ -106,13 +160,13 @@ canvas.on('mouse:out', function(options) {
 //When an object is selected
 canvas.on('object:selected', function(options) {
     objectSelected = true;
-    console.log("I have now selected an object");
+    document.getElementById("selectionMenu").style.display = 'inline';
 });
 
 //Selection cleared, or deselected an object
 canvas.on('selection:cleared', function(options) {
     objectSelected = false;
-    console.log("I cleared my selection");
+    document.getElementById("selectionMenu").style.display = 'none';
 });
 
 //When moving an object
@@ -123,6 +177,22 @@ canvas.on('object:moving', function(options) {
     top: Math.round(options.target.top / grid) * grid
   });
 });
+
+//Delete object function
+var deleteSelectedObject = document.getElementById('btn-delete');
+deleteSelectedObject.onclick = function() {
+    var obj = canvas.getActiveObject();
+    //Remove from linesArray
+    for(var i=0; i < linesArray.length;i++) {
+        if(linesArray[i] === obj) {
+            linesArray.splice(i, 1);
+        }
+    }
+    //Remove from canvas
+    canvas.remove(obj);
+    canvas.setActiveObject(obj);
+    canvas.remove(obj);
+};
 </script>
 </body>
 </html>

@@ -1,0 +1,38 @@
+Linjelengde:
+Vet ikke hvorfor, men lengden til linja virker å være litt lengre enn hva man tegner, slik at det stikker en tupp ut av gridden.
+Denne lengden tror jeg tilsvarer "strokeWidth", altså bredden på linjestrøket. Dette ligger nok i fabric.js sin core-kode et sted.
+
+Kontroll-boksene rundt linja:
+Når man har valgt en linje/vegg, bør man kun ha to kontroll-bokser, en ved hvert endepunkt av linja.
+Ved å dra i disse, endrer man lengden til linja (og retningen? Se under)
+Ved å endre lengden til veggen, bør vi også her ha en "snap-to-grid" funksjon.
+
+Rotering:
+Foreslår å implementere en rotasjonsfunksjon i hvert av endepunktene. Når man da drar i en retning, skal retningen
+kun flyttes slik at endepunktet ender opp på grid'en. Synes i utgangspunktet det er dårlig å rotere et objekt
+på midten av linja, slik det er nå. (Altså: samme endepunkt-boks går til både rotering og skalering samtidig)
+
+Valgmeny:
+Denne må styles, og vi må velge hvilke options vi ønsker å ha her. Er foreløpig oppe for å teste funksjonalitet.
+Det som er bra, er at vi kan definere valg som "material" uten problem, som videre kan brukes i simulering.
+
+Dersom en bruker ønsker å tegne alle linjene i f.eks. betong, bør kanskje dette være et valg? Slik som det er nå:
+Alle linjer tegnet som gips som default, og må deretter endres i meny.
+
+Grid:
+Ønskelig å ha en zoom-funksjon. Har sett på dette og testet litt, virker oppnåelig.
+
+Brukerfunksjonalitet:
+Bør vi ha en slags meny, der brukeren kan velge om han vil flytte objekt(er), tegne nye linjer, ... ?
+Eller slik som nå; alltid default å tegne ny linje dersom objekt ikke er valgt. Ved valg av objekt, kan flytte og 
+endre vegg-valg i sidemeny.
+
+Dersom vi går for en slik meny, har vi muligheter for å gjøre det slik at en bruker kan dra med musa over flere
+objekter, for å flytte dem samtidig. Ikke en veldig kritisk funksjonalitet.
+
+
+Merk ellers at noen kommentarer blir skrevet til logg (i firefox: "Ctrl + Shift + i" for å se logg)
+Kun for å dobbelsjekke diverse funksjoner o.l.
+
+Ettersom de mest grunnleggende funksjonene begynner å komme på plass for 2d linjetegner, bør vi kanskje se videre på 3d visualisering?
+Har du sett noe mer på dette? F.eks. three.js?
