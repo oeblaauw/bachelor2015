@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>Playing around with three.js</title>
+        <meta charset="utf-8">
+    </head>
+    <body style="margin: 0;">
+
+        <script src="js/three.min.js"></script>
+        <script src="js/OrbitControls.js"></script>
+
+        <script>
+
+            // Set up the scene, camera, and renderer as global variables.
+            var scene, camera, renderer;
+
+            init();
+            animate();
+
+            // Sets up the scene.
+            function init() {
+
+                // Create the scene and set the scene size.
+                scene = new THREE.Scene();
+                var WIDTH = window.innerWidth,
+                        HEIGHT = window.innerHeight;
+
+                // Create a renderer and add it to the DOM.
+                renderer = new THREE.WebGLRenderer({antialias: true});
+                renderer.setSize(WIDTH, HEIGHT);
+                document.body.appendChild(renderer.domElement);
+
+                // Create a camera, zoom it out from the model a bit, and add it to the scene.
+                camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
+                camera.position.set(0, 6, 10);
+                scene.add(camera);
+
+                // Create an event listener that resizes the renderer with the browser window.
+                window.addEventListener('resize', function () {
+                    var WIDTH = window.innerWidth,
+                            HEIGHT = window.innerHeight;
+                    renderer.setSize(WIDTH, HEIGHT);
+                    camera.aspect = WIDTH / HEIGHT;
+                    camera.updateProjectionMatrix();
+                });
+
+                // Set the background color of the scene.
+                renderer.setClearColorHex(0xFFFFFF, 1);
+
+                var axisHelper = new THREE.AxisHelper(5);
+                scene.add(axisHelper);
+
+                function drawWall(xPos, zPos, xSize, zSize) {
+                    
+                    //Set fixed positions for yPos (ground level) and ySize (standard ceiling height)
+                    var yPos = 0;
+                    var ySize = 2.4;
+                    
+                    //Calculate new coordinates for (x,z)
+                    var xNew =xPos+xSize;
+                    var zNew =zPos+zSize;
+                    
+                    //Build geometry from Vectors
+                    var geometry = new THREE.Geometry();
+                    geometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
+                    geometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
+                    geometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
+                    geometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
+                    geometry.faces.push(new THREE.Face3(0, 1, 2)); 
+                    geometry.faces.push(new THREE.Face3(0, 2, 3));
+                                        
+                    // Draw wall
+                    var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color:0x000000,side:THREE.DoubleSide,opacity:0.5,transparent:true }));
+                    scene.add(wall);
+                }
+                
+                drawWall(0,0,2,2);
+                drawWall(2,2,2,-2);
+                drawWall(4,0,-2,-2);
+                drawWall(2,-2,-2,2);
+                
+                // Add OrbitControls so that we can pan around with the mouse.
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            }
+
+            // Renders the scene and updates the render as needed.
+            function animate() {
+
+                // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+                requestAnimationFrame(animate);
+
+                // Render the scene.
+                renderer.render(scene, camera);
+                controls.update();
+
+            }
+
+        </script>
+
+    </body>
+</html>
