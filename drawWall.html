@@ -32,8 +32,9 @@
 
                 // Create a camera, zoom it out from the model a bit, and add it to the scene.
                 camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
-                camera.position.set(0, 6, 10);
+                camera.position.set(25, 25, 25);
                 scene.add(camera);
+
 
                 // Create an event listener that resizes the renderer with the browser window.
                 window.addEventListener('resize', function () {
@@ -51,37 +52,39 @@
                 scene.add(axisHelper);
 
                 function drawWall(xPos, zPos, xSize, zSize) {
-                    
+
                     //Set fixed positions for yPos (ground level) and ySize (standard ceiling height)
                     var yPos = 0;
                     var ySize = 2.4;
-                    
+
                     //Calculate new coordinates for (x,z)
-                    var xNew =xPos+xSize;
-                    var zNew =zPos+zSize;
-                    
+                    var xNew = xPos + xSize;
+                    var zNew = zPos + zSize;
+
                     //Build geometry from Vectors
                     var geometry = new THREE.Geometry();
                     geometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
                     geometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
                     geometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
                     geometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
-                    geometry.faces.push(new THREE.Face3(0, 1, 2)); 
+                    geometry.faces.push(new THREE.Face3(0, 1, 2));
                     geometry.faces.push(new THREE.Face3(0, 2, 3));
-                                        
+
                     // Draw wall
-                    var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color:0x000000,side:THREE.DoubleSide,opacity:0.5,transparent:true }));
+                    var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide, opacity: 0.5, transparent: true}));
                     scene.add(wall);
                 }
-                
-                drawWall(0,0,2,2);
-                drawWall(2,2,2,-2);
-                drawWall(4,0,-2,-2);
-                drawWall(2,-2,-2,2);
-                
+
+                drawWall(4, 4, 2, 2);
+                drawWall(6, 6, 2, -2);
+                drawWall(8, 4, -2, -2);
+                drawWall(6, 2, -2, 2);
+
                 // Add OrbitControls so that we can pan around with the mouse.
                 controls = new THREE.OrbitControls(camera, renderer.domElement);
-
+                controls.maxPolarAngle = Math.PI / 2;
+                center = new THREE.Vector3(6, 0, 4);
+                controls.center = (center);
             }
 
             // Renders the scene and updates the render as needed.
@@ -91,8 +94,11 @@
                 requestAnimationFrame(animate);
 
                 // Render the scene.
+
                 renderer.render(scene, camera);
                 controls.update();
+
+
 
             }
 
