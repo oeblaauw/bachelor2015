@@ -112,7 +112,7 @@
                                 var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide, opacity: 0.5, transparent: true}));
                                 scene.add(wall);
                             }
-                            
+
                             /*
                              * Function 
                              */
@@ -126,15 +126,28 @@
                                 }
                                 return linesArray;
                             }
-                            
+
                             var linjeArray = getLinesFrom2D();
                             for (var i = 0; i < linjeArray.length; i++) {
                                 var linje = linjeArray[i],
-                                        refactor = 50;
-                                var xPos = (linje.left) / refactor,
-                                        zPos = (linje.top) / refactor,
-                                        xSize = linje.width / refactor,
-                                        zSize = linje.height / refactor;
+                                        refactor = 50,
+                                        x1 = linje.x1,
+                                        x2 = linje.x2,
+                                        y1 = linje.y1,
+                                        y2 = linje.y2,
+                                        xPos = linje.left,
+                                        xSize = linje.width,
+                                        zPos = linje.top,
+                                        zSize = linje.height;
+                                /* This is in case we draw a line from Bot.left to Top.right*/
+                                if ((x2 > x1 && y2 < y1) || (x2 < x1 && y2 > y1)) {
+                                    zPos = linje.top + linje.height,
+                                    zSize = -linje.height;
+                                } 
+                                xPos/=refactor,
+                                        zPos/=refactor,
+                                        xSize/=refactor,
+                                        zSize/=refactor;
                                 drawWall(xPos, zPos, xSize, zSize);
                             }
 
@@ -143,14 +156,14 @@
                             controls = new THREE.OrbitControls(camera, renderer.domElement);
                             var CPJSON = localStorage.getItem("centerPoint");
                             var point, pX, pY;
-                            if(CPJSON !== null) {
+                            if (CPJSON !== null) {
                                 point = JSON.parse(CPJSON);
                                 pX = point.x / 50;
                                 pY = point.y / 50;
-                            }  else {
+                            } else {
                                 pX = pY = 0;
                             }
-                            
+
                             center = new THREE.Vector3(pX, 0, pY);
                             controls.center = (center);
                             controls.maxPolarAngle = Math.PI / 2;
