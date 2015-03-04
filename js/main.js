@@ -220,6 +220,7 @@ function clearCanvas() {
     linesArray = [];
     drawGrid();
     saveCanvas();
+    localStorage.removeItem('centerPoint');
 }
 
 clearButton.onclick = function () {

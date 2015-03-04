@@ -141,9 +141,16 @@
 
                             // Add OrbitControls so that we can pan around with the mouse.
                             controls = new THREE.OrbitControls(camera, renderer.domElement);
-                            var point = JSON.parse(localStorage.getItem("centerPoint")),
-                                    pX = point.x / 50,
-                                    pY = point.y / 50;
+                            var CPJSON = localStorage.getItem("centerPoint");
+                            var point, pX, pY;
+                            if(CPJSON !== null) {
+                                point = JSON.parse(CPJSON);
+                                pX = point.x / 50;
+                                pY = point.y / 50;
+                            }  else {
+                                pX = pY = 0;
+                            }
+                            
                             center = new THREE.Vector3(pX, 0, pY);
                             controls.center = (center);
                             controls.maxPolarAngle = Math.PI / 2;
