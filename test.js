@@ -8321,7 +8321,11 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
      */
     _getActionFromCorner: function(target, corner) {
       var action = 'drag';
-      if (corner) {
+      if(corner === 'tl') {
+          
+          action = 'remove';
+      }
+      /*if (corner) {
         action = (corner === 'ml' || corner === 'mr')
           ? 'scaleX'
           : (corner === 'mt' || corner === 'mb')
@@ -8329,7 +8333,7 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
             : corner === 'mtr'
               ? 'rotate'
               : 'scale';
-      }
+      }*/
       return action;
     },
 
@@ -8347,6 +8351,11 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
           corner = target._findTargetCorner(this.getPointer(e, true)),
           action = this._getActionFromCorner(target, corner),
           origin = this._getOriginFromCorner(target, corner);
+
+          //MODIFICATIONS
+          if(action === 'remove') {
+              deleteSelObject();
+          }
 
       this._currentTransform = {
         target: target,
@@ -9802,6 +9811,10 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
      * @private
      */
     _setCornerCursor: function(corner, target) {
+        if(corner === 'tl') {
+            this.setCursor(this.defaultCursor);
+            return false;
+        }
       if (corner in cursorOffset) {
         this.setCursor(this._getRotatedCornerCursor(corner, target));
       }
@@ -11155,7 +11168,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
      * @type Boolean
      * @default
      */
-
+    
     lockScalingFlip:          false,
     /**
      * List of properties to consider when checking if state
@@ -11253,6 +11266,12 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
      * @param {Array} [propertiesToInclude] Any properties that you might want to additionally include in the output
      * @return {Object} Object representation of an instance
      */
+    
+    /**
+     * 
+     * @param {type} propertiesToInclude
+     * @returns {fabric_L10505.fabricAnonym$132.toObject@call;_removeDefaultValues|fabric_L10505.fabricAnonym$132.toObject.object}
+     */
     toObject: function(propertiesToInclude) {
       var NUM_FRACTION_DIGITS = fabric.Object.NUM_FRACTION_DIGITS,
 
@@ -11282,9 +11301,21 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
             clipTo:                   this.clipTo && String(this.clipTo),
             backgroundColor:          this.backgroundColor,
             fillRule:                 this.fillRule,
-            globalCompositeOperation: this.globalCompositeOperation
+            globalCompositeOperation: this.globalCompositeOperation,
+            
+            /*ADDED BY BLAAUW - MODIFICATION
+             * Reason: Needs to be added to JSON*/
+            material:                 this.material,
+            selectable:               this.selectable,
+            lockScalingX:             this.lockScalingX,
+            lockScalingY:             this.lockScalingY,
+            lockUniScaling:           this.lockUniScaling,
+            lockScalingFlip:          this.lockScalingFlip,
+            hasControls:              this.hasControls,
+            perPixelTargetFind:       this.perPixelTargetFind,
+            padding:                  this.padding
           };
-
+          
       if (!this.includeDefaultValues) {
         object = this._removeDefaultValues(object);
       }
@@ -13105,7 +13136,8 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
 
       ctx.globalAlpha = this.isMoving ? this.borderOpacityWhenMoving : 1;
       ctx.strokeStyle = ctx.fillStyle = this.cornerColor;
-
+      
+      /*
       // top-left
       this._drawControl('tl', ctx, methodName,
         left - scaleOffset,
@@ -13148,14 +13180,22 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
           left - scaleOffset,
           top + height/2 - scaleOffset);
       }
-
+        
+       
       // middle-top-rotate
+      
       if (this.hasRotatingPoint) {
         this._drawControl('mtr', ctx, methodName,
           left + width/2 - scaleOffset,
           top - this.rotatingPointOffset - scaleOffset);
-      }
-
+      }*/
+    //BLAAUW METHOD
+    //Method for drawing delete
+    if(this.hasRotatingPoint) {
+        this._drawControl('tl', ctx, methodName,
+        left - scaleOffset,
+        top  - scaleOffset);
+    }
       ctx.restore();
 
       return this;
@@ -13170,6 +13210,19 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
       if (this.isControlVisible(control)) {
         isVML() || this.transparentCorners || ctx.clearRect(left, top, size, size);
         ctx[methodName](left, top, size, size);
+        //MODIFICATION
+        
+        var SelectedIconImage = new Image();
+        SelectedIconImage.src = "img/images.png";
+        
+        switch(control) {
+            case 'tl':
+            ctx.drawImage(SelectedIconImage, left, top, size, size);
+            break;
+        default:
+            ctx[methodName](left, top, size, size);
+            return;
+        }
       }
     },
 
@@ -13234,7 +13287,7 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
           mt: true,
           mr: true,
           mb: true,
-          mtr: true
+          mtr: false
         };
       }
       return this._controlsVisibility;
