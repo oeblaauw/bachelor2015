@@ -8348,6 +8348,10 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
           action = this._getActionFromCorner(target, corner),
           origin = this._getOriginFromCorner(target, corner);
 
+//MODIFIED BY BLAAUW
+          if(action === 'remove') {
+              deleteSelObject();
+          }
       this._currentTransform = {
         target: target,
         action: action,
@@ -12607,7 +12611,9 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
           mt  = new fabric.Point((tr.x + tl.x)/2, (tr.y + tl.y)/2),
           mr  = new fabric.Point((br.x + tr.x)/2, (br.y + tr.y)/2),
           mb  = new fabric.Point((br.x + bl.x)/2, (br.y + bl.y)/2),
-          mtr = new fabric.Point(mt.x + sinTh * this.rotatingPointOffset, mt.y - cosTh * this.rotatingPointOffset);
+          mtr = new fabric.Point(mt.x + sinTh * this.rotatingPointOffset, mt.y - cosTh * this.rotatingPointOffset),
+          //modified by blaauw
+          mm = new fabric.Point(mt.x, ml.y);
       // debugging
 
       /* setTimeout(function() {
@@ -12629,7 +12635,9 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
         // middle
         ml: ml, mt: mt, mr: mr, mb: mb,
         // rotating point
-        mtr: mtr
+        mtr: mtr,
+        //Modified by Blaauw
+        mm: mm
       };
 
       // set coordinates of the draggable boxes in the corners used to scale/rotate the image
