@@ -6,15 +6,19 @@
 body {
     
 }
-    #selectionMenu {
-        
-    }
-    #color-select {
-        width: 50px;
-        height: 20px;
-        background-color: black;
-        padding: 10px;
-    };
+
+canvas {
+    background: transparent; 
+}
+.canvas-container {
+    position: absolute !important;
+}
+#color-select {
+    width: 50px;
+    height: 20px;
+    background-color: black;
+    padding: 10px;
+};
 
 
 

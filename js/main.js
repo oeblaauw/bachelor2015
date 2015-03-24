@@ -9,27 +9,41 @@
 
 //Declaring and initializing variables
 //Perhaps some should go in the init() function
-var canvas = new fabric.Canvas('canvas', {selection: false, width: this.width, height: this.height, targetFindTolerance: 5});
-var linesArray = [];    //Our lines that represents walls
+var canvas = new fabric.Canvas('canvas', {selection: false, width: this.width, height: this.height, targetFindTolerance: 5, allowTouchScrolling: true});
+var gridCanvas = new fabric.Canvas('gridCanvas', {selection: false, width: 1500, height: 1000});
+var ghostCanvas = new fabric.Canvas('ghostCanvas', {selection: false, width: 1500, height: 1000});
+var tempArray = [], tempArrayFloorNumber = 1;
 var deleteButton = document.getElementById('btn-delete'),
         clearButton = document.getElementById('btn-clear'),
+        clearAllButton = document.getElementById('btn-clear-all'),
         updateButton = document.getElementById('btn-update'),
-        checkbox = document.getElementById('chk-select');
+        checkbox = document.getElementById('chk-select'),
+        floorButton1 = document.getElementById('btn-floor-1'),
+        floorButton2 = document.getElementById('btn-floor-2'),
+        floorButton3 = document.getElementById('btn-floor-3'),
+        floorButton4 = document.getElementById('btn-floor-4'),
+        addFloorButton = document.getElementById('btn-floor-add'),
+        deleteFloorButton = document.getElementById('btn-delete-floor');
 var width = canvas.width;
 var height = canvas.height;
 var grid = 50; //Size in px on grid
 var objectSelected = false;
-
+var floorNumber; // Possible values are 1 - 4
+var currentFloors, maxFloor = 4;
+var jsonFloorNumber;
+var isDown = false;
+var deletePermitted = false;
 // Runs the init function
 init();
 
 //Run the initializing functions here
 function init() {
-    linesArray = [];
     checkbox.checked = false;
-    drawGrid();     //drawGrid here will only have affect if there is no canvas in localStorage
+    floorNumber = 1,
+    currentFloors = 1;
+    drawGrid();
+    loadFloors();
     loadCanvas();   //Else it will be overwritten by the load
-    console.log(localStorage);
 }
 
 //Function for drawing a non-selectable grid
@@ -41,8 +55,8 @@ function drawGrid() {
         evented: false
     };
     for (var i = 0; i < (width / grid); i++) {
-        canvas.add(new fabric.Line([i * grid, 0, i * grid, height], gridOptions));
-        canvas.add(new fabric.Line([0, i * grid, width, i * grid], gridOptions));
+        gridCanvas.add(new fabric.Line([i * grid, 0, i * grid, height], gridOptions));
+        gridCanvas.add(new fabric.Line([0, i * grid, width, i * grid], gridOptions));
     }
 };
 
@@ -74,7 +88,8 @@ canvas.on('mouse:down', function (options) {
             perPixelTargetFind: true,
             visible: true,
             padding: 10,
-            material: 'gips'
+            material: 'gips',
+            floorNumber: floorNumber
         });
         canvas.add(line);
     }
@@ -102,9 +117,11 @@ canvas.on('mouse:up', function (options) {
      * Return if we have selected an object
      * Else: Add the drawn line to the canvas
      */
+    if(canvas.selection) return;
     isDown = false;
-    if (objectSelected)
+    if (objectSelected) {
         return;
+    }
 
     //Making a copy of the drawn line
     var myLine = line;
@@ -112,52 +129,50 @@ canvas.on('mouse:up', function (options) {
     line.remove();
 
     //We don't want to add single points, therefor line width, height or both must be > 0
-    //in order to be added to the canvas, and the linesArray
+    //in order to be added to the canvas.
     if (myLine.width > 0 || myLine.height > 0) {
         myLine.selectable = true;
         canvas.add(myLine);
-        linesArray.push(myLine);
         saveCanvas();
     }
-});
-
-//Event listener for hovering an object
-canvas.on('mouse:over', function (options) {
-
-});
-
-//Event listener for hovering off an object
-canvas.on('mouse:out', function (options) {
-
-});
-
-//Event listener for mouse scrolling
-canvas.on('mouse:scroll', function (options) {
-
 });
 
 //Event listener for selecting an object
 canvas.on('object:selected', function (options) {
     objectSelected = true;
     document.getElementById("selectionMenu").style.display = 'inline';
+    setTimeout(function() {
+        deletePermitted = true;
+    }, 500);
+    
 });
 
 //Event listener for clearing a selection of an object
 canvas.on('selection:cleared', function (options) {
     objectSelected = false;
+    deletePermitted = false;
     document.getElementById("selectionMenu").style.display = 'none';
-    saveCanvas();
+});
+
+//Event listener for modifying an object, i.e. moving it. Save when stopped.
+canvas.on('object:modified', function(options) {
+   saveCanvas(); 
 });
 
 //Event listener for moving an object
 canvas.on('object:moving', function (options) {
     /*
      * This function snaps an object to the grid when moving it.
-     */
-    options.target.set({
-        left: Math.round(options.target.left / grid) * grid,
-        top: Math.round(options.target.top / grid) * grid
-    });
+     * When multiple objects have been selected, the canvas groups all of the objects
+     * inside a box with a padding, which we subtract in the code below.
+     * 
+     */var padding=0;
+        if(canvas.getActiveGroup()) padding=10;
+        console.log(canvas.getActiveGroup());
+        options.target.set({
+        left: (Math.round(options.target.left / grid) * grid) - padding,
+        top: (Math.round(options.target.top / grid) * grid) - padding
+    }); 
 });
 
 /*
@@ -167,84 +182,169 @@ canvas.on('object:moving', function (options) {
  * preferably in an own js file
  */
 
-//Delete one specific object from canvas
-deleteObject = function (obj) {
-    for (var i = 0; i < linesArray.length; i++) {
-        if (linesArray[i] === obj) {
-            linesArray.splice(i, 1);
-        }
-    }
-    canvas.remove(obj);
-};
-
 //Delete selected item or group of items
+/*
+ * !!!
+ * We currently have a problem with deleting multiple lines from the canvas
+ * Look into this when the time is right!
+ * 
+ */
 deleteSelObject = function () {
+    //Check if delete is permitted
+    if(!deletePermitted) return;
     //Check to see if we have selected multiple objects
     if (canvas.getActiveGroup()) {
-        var myGroup = canvas.getActiveGroup()._objects;
-        for (var i = 0; i < myGroup.length; i++) {
-            deleteObject(myGroup[i]);
-        }
-        canvas.discardActiveGroup();
+        alert("Feil i slettefunksjon");
+        canvas.getActiveGroup().forEachObject(function(o) {
+            canvas.remove(o);
+        });
+        canvas.discardActiveGroup().renderAll();
         
     } else {
-        var obj = canvas.getActiveObject();
-        deleteObject(obj);
+        canvas.remove(canvas.getActiveObject());
+        canvas.renderAll();
     }
-    canvas.renderAll();
     saveCanvas();
 };
 
 //Function for saving the canvas to localStorage
 function saveCanvas() {
     try {
-        findCenterPoint();
-        localStorage.setItem("myCanvas", JSON.stringify(canvas));
-        localStorage.setItem("myLines", JSON.stringify(linesArray));
+        jsonFloorNumber = "myFloor" + floorNumber;
+        localStorage.setItem(jsonFloorNumber, JSON.stringify(canvas));
     }
     catch (e) {
         console.log("Storage failed: " + e);
     }
 };
-
 //Function for loading the canvas from localStorage
 function loadCanvas() {
     //Get json from localStorage
-    var json = JSON.parse(localStorage.getItem('myCanvas'));
+    jsonFloorNumber = "myFloor" + floorNumber;
+    var json = JSON.parse(localStorage.getItem(jsonFloorNumber));
     //Return if there is no saved canvas data
-    if(json === null) return;
-    //Go through JSON
-    //If an object is not selectable, i.e. the grid, we do not want to add it to our linesArray
-    canvas.loadFromJSON(json, canvas.renderAll.bind(canvas), function (o, object) {
-        if (object.selectable === true) {
-            linesArray.push(object);
-        }
+    if(json === null) {
+        console.log(jsonFloorNumber + " had no data. Will now clear canvas and save.");
+        clearCanvas();
+        loadCanvas();
+        return;
+    }
+    if(floorNumber > 1) {
+        var ghostNumber = "myFloor" + (floorNumber-1);
+        var ghostJSON = JSON.parse(localStorage.getItem(ghostNumber));
+    }
+    ghostCanvas.loadFromJSON(ghostJSON, ghostCanvas.renderAll.bind(ghostCanvas), function(o, object) {
+        object.set({
+            stroke: 'rgba(100,100,255, 0.5'
+        });
     });
+    //Go through JSON
+    canvas.loadFromJSON(json, canvas.renderAll.bind(canvas));  
 };
 
 //Function for clearing the canvas
 //This needs to be rewritten, maybe using the init() function. Some repeating code
 function clearCanvas() {
     canvas.clear();
-    linesArray = [];
-    drawGrid();
+    if(floorNumber === 1) ghostCanvas.clear();
     saveCanvas();
 }
 
+function clearAll() {
+    for(var i=1;i<=4;i++) {
+        floorNumber = i;
+        clearCanvas();
+    }
+}
 /*
  * Onclick functions for buttons
  */
 
+
+addFloorButton.onclick = function() {
+    if(currentFloors < maxFloor) {
+        currentFloors++;
+        var floorId = 'btn-floor-' + currentFloors;
+        document.getElementById(floorId).style.display = "inline";
+        deleteFloorButton.style.display = "inline";
+        localStorage.setItem('currentFloors', currentFloors);
+        changeFloor(currentFloors, true);
+    } 
+    if(currentFloors === maxFloor) {
+        addFloorButton.style.display = "none";
+    }
+};
+deleteFloorButton.onclick = function() {
+    saveCanvas();
+    if(currentFloors === 1) {
+        alert("Kan ikke slette første etasje!");
+    } else {
+        floorNumber = currentFloors;
+        changeFloor(floorNumber, true);
+        clearCanvas();
+        currentFloors--;
+        localStorage.setItem("currentFloors", currentFloors);
+        floorNumber = 1;
+        loadFloors();
+        loadCanvas();
+        changeFloor(floorNumber, true);
+    }
+};
+
 //Adding function to delete button
+floorButton1.onclick = function() {
+    changeFloor(1, false);
+};
+floorButton2.onclick = function() {
+    changeFloor(2, false);
+};
+floorButton3.onclick = function() {
+    changeFloor(3, false);
+};
+floorButton4.onclick = function() {
+    changeFloor(4, false);
+};
+
+function changeFloor(floor, skipCheck) {
+    saveCanvas();
+    if(!skipCheck && floor === floorNumber) return;
+    floorNumber = floor;
+    document.getElementById('floor-selected').innerHTML = "Etasje " + floorNumber;
+    loadCanvas();
+}
+function loadFloors() {
+    currentFloors = JSON.parse(localStorage.getItem("currentFloors"));
+    document.getElementById('btn-floor-1').style.display = "inline"; 
+    document.getElementById('btn-floor-2').style.display = "none"; 
+    document.getElementById('btn-floor-3').style.display = "none"; 
+    document.getElementById('btn-floor-4').style.display = "none"; 
+    document.getElementById('btn-delete-floor').style.display = "none";
+    document.getElementById('btn-floor-add').style.display = "inline"; 
+    
+    if(currentFloors > 1) {
+        if(currentFloors > 2) {
+            if(currentFloors > 3) {
+                document.getElementById('btn-floor-4').style.display = "inline"; 
+                document.getElementById('btn-floor-add').style.display = "none"; 
+            }
+            document.getElementById('btn-floor-3').style.display = "inline";
+        }
+        document.getElementById('btn-floor-2').style.display = "inline"; 
+        document.getElementById('btn-delete-floor').style.display = "inline"; 
+    }
+};
 deleteButton.onclick = deleteSelObject;
 
 //Adding function to clear button
 clearButton.onclick = function () {
-    var answer = confirm("Er du sikker?");
-    if (answer) {
+    if (confirm("Er du sikker? Dette vil slette alt du har tegnet i denne etasjen.")) {
         clearCanvas();
     }
-    ;
+};
+clearAllButton.onclick = function() {
+    if (confirm("Er du sikker? Dette vil slette alle etasjer.")) {
+        clearAll();
+    }
 };
 
 //Adding function to update button
@@ -303,40 +403,7 @@ checkbox.onchange = function () {
  * Problem if we delete a line that is listed as a cL/cR/cT/cB ? 
  * 
  */
-function findCenterPoint() {
-    var cL, cR, cT, cB,
-            centerX, centerY, centerPoint;
-    if (linesArray.length > 0) {
-        var line = linesArray[0];
-        cL = line.left;
-        cR = line.left + line.width;
-        cT = line.top;
-        cB = line.top + line.height;
 
-        for (var i = 1; i < linesArray.length; i++) {
-            var line = linesArray[i];
-
-            if (line.left + line.width > cR) {
-                cR = line.left + line.width;
-            }
-            if (line.left < cL) {
-                cL = line.left;
-            }
-            if (line.top + line.height > cB) {
-                cB = line.top + line.height;
-            }
-            if (line.top < cT) {
-                cT = line.top;
-            }
-        }
-        centerX = (cR + cL) / 2;
-        centerY = (cB + cT) / 2;       
-    } else {
-        centerX = 0, centerY = 0;
-    }
-    centerPoint = new fabric.Point(centerX, centerY);
-    localStorage.setItem('centerPoint', JSON.stringify(centerPoint));
-};
 
 /*
  * Here we write some functions that are defined in fabric.js, but we need to 
@@ -361,7 +428,8 @@ fabric.Object.prototype.toObject = (function (toObject) {
             lockScalingFlip: this.lockScalingFlip,
             hasControls: this.hasControls,
             perPixelTargetFind: this.perPixelTargetFind,
-            padding: this.padding
+            padding: this.padding,
+            floorNumber: this.floorNumber
         });
     };
 })(fabric.Object.prototype.toObject);
@@ -426,7 +494,7 @@ fabric.Object.prototype._drawControl = function (control, ctx, methodName, left,
     
     if (this.isControlVisible(control)) {
         this.transparentCorners || ctx.clearRect(left, top, size, size);
-
+        
         switch (control) {
             case 'mm':
                 size = 20, 

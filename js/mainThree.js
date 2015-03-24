@@ -1,6 +1,7 @@
 
 // Set up the scene, camera, and renderer as global variables.
 var scene, camera, renderer;
+var linjeArray = [];
 
 init();
 animate();
@@ -38,45 +39,8 @@ function init() {
     var axisHelper = new THREE.AxisHelper(5);
     scene.add(axisHelper);
 
-    function drawWall(xPos, zPos, xSize, zSize) {
-
-        //Set fixed positions for yPos (ground level) and ySize (standard ceiling height)
-        var yPos = 0;
-        var ySize = 2.4;
-
-        //Calculate new coordinates for (x,z)
-        var xNew = xPos + xSize;
-        var zNew = zPos + zSize;
-
-        //Build geometry from Vectors
-        var geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
-        geometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
-        geometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
-        geometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
-        geometry.faces.push(new THREE.Face3(0, 1, 2));
-        geometry.faces.push(new THREE.Face3(0, 2, 3));
-
-        // Draw wall
-        var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide, opacity: 0.5, transparent: true}));
-        scene.add(wall);
-    }
-
-    /*
-     * Function 
-     */
-    function getLinesFrom2D() {
-        var json = localStorage.getItem("myLines"),
-                linesArray = [],
-                jsonArray = JSON.parse(json);
-
-        for (var i = 0; i < jsonArray.length; i++) {
-            linesArray.push(jsonArray[i]);
-        }
-        return linesArray;
-    }
-
-    var linjeArray = getLinesFrom2D();
+    
+    linjeArray = getLinesFrom2D();
     for (var i = 0; i < linjeArray.length; i++) {
         var linje = linjeArray[i],
                 refactor = 50,
@@ -87,7 +51,8 @@ function init() {
                 xPos = linje.left,
                 xSize = linje.width,
                 zPos = linje.top,
-                zSize = linje.height;
+                zSize = linje.height,
+                floorNumber = linje.floorNumber;
         /* This is in case we draw a line from Bot.left to Top.right*/
         if ((x2 > x1 && y2 < y1) || (x2 < x1 && y2 > y1)) {
             zPos = linje.top + linje.height,
@@ -97,21 +62,16 @@ function init() {
                 zPos /= refactor,
                 xSize /= refactor,
                 zSize /= refactor;
-        drawWall(xPos, zPos, xSize, zSize);
+        drawWall(xPos, zPos, xSize, zSize, floorNumber);
     }
 
 
     // Add OrbitControls so that we can pan around with the mouse.
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-    var CPJSON = localStorage.getItem("centerPoint");
-    var point, pX, pY;
-    if (CPJSON !== null) {
-        point = JSON.parse(CPJSON);
-        pX = point.x / 50;
-        pY = point.y / 50;
-    } else {
-        pX = pY = 0;
-    }
+    var centerPoint = findCenterPoint();
+    var pX = centerPoint.x / 50;
+    var pY = centerPoint.y / 50;
+    
 
     center = new THREE.Vector3(pX, 0, pY);
     controls.center = (center);
@@ -127,6 +87,90 @@ function animate() {
     // Render the scene.
     renderer.render(scene, camera);
     controls.update();
-
 }
 
+function getLinesFrom2D() {
+    var linesArray = [];
+    var maxFloor = localStorage.getItem('currentFloors'); //Number of floors
+    for(var i=1; i<=maxFloor; i++) {
+        var floor = "myFloor" + i;
+        var jsonfloor = JSON.parse(localStorage.getItem(floor));
+        if(jsonfloor === null) return;
+        var array = jsonfloor.objects;
+        for(var j=0;j<array.length;j++) {
+            linesArray.push(array[j]);
+        }
+    }
+    return linesArray;
+};
+
+function drawWall(xPos, zPos, xSize, zSize, floorNumber) {
+
+        //Set fixed positions for yPos (ground level) and ySize (standard ceiling height)
+        var yPos = (floorNumber-1)*2.4;
+        var ySize = 2.4*floorNumber;
+
+        //Calculate new coordinates for (x,z)
+        var xNew = xPos + xSize;
+        var zNew = zPos + zSize;
+
+        //Build geometry from Vectors
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
+        geometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
+        geometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
+        geometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
+        geometry.faces.push(new THREE.Face3(0, 1, 2));
+        geometry.faces.push(new THREE.Face3(0, 2, 3));
+
+        // Draw wall
+        var wallColor;
+        switch(floorNumber) {
+            case 1:
+                wallColor = 0x000000;
+                break;
+            case 2:
+                wallColor = 0xFF0000;
+                break;
+            default:
+                wallColor = 0x000000;
+                break;
+        }
+        var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: wallColor, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
+        scene.add(wall);
+};
+
+function findCenterPoint() {
+    var cL, cR, cT, cB,
+            centerX, centerY, centerPoint;
+    if (linjeArray.length > 0) {
+        var line = linjeArray[0];
+        cL = line.left;
+        cR = line.left + line.width;
+        cT = line.top;
+        cB = line.top + line.height;
+
+        for (var i = 1; i < linjeArray.length; i++) {
+            line = linjeArray[i];
+
+            if (line.left + line.width > cR) {
+                cR = line.left + line.width;
+            }
+            if (line.left < cL) {
+                cL = line.left;
+            }
+            if (line.top + line.height > cB) {
+                cB = line.top + line.height;
+            }
+            if (line.top < cT) {
+                cT = line.top;
+            }
+        }
+        centerX = (cR + cL) / 2;
+        centerY = (cB + cT) / 2;       
+    } else {
+        centerX = 0, centerY = 0;
+    }
+    centerPoint = new fabric.Point(centerX, centerY);
+    return centerPoint;
+};
