@@ -39,7 +39,7 @@ function init() {
     var axisHelper = new THREE.AxisHelper(5);
     scene.add(axisHelper);
 
-    
+
     linjeArray = getLinesFrom2D();
     for (var i = 0; i < linjeArray.length; i++) {
         var linje = linjeArray[i],
@@ -71,7 +71,7 @@ function init() {
     var centerPoint = findCenterPoint();
     var pX = centerPoint.x / 50;
     var pY = centerPoint.y / 50;
-    
+
 
     center = new THREE.Vector3(pX, 0, pY);
     controls.center = (center);
@@ -92,53 +92,62 @@ function animate() {
 function getLinesFrom2D() {
     var linesArray = [];
     var maxFloor = localStorage.getItem('currentFloors'); //Number of floors
-    for(var i=1; i<=maxFloor; i++) {
+    for (var i = 1; i <= maxFloor; i++) {
         var floor = "myFloor" + i;
         var jsonfloor = JSON.parse(localStorage.getItem(floor));
-        if(jsonfloor === null) return;
+        if (jsonfloor === null)
+            return;
         var array = jsonfloor.objects;
-        for(var j=0;j<array.length;j++) {
+        for (var j = 0; j < array.length; j++) {
             linesArray.push(array[j]);
         }
     }
     return linesArray;
-};
+}
+;
 
 function drawWall(xPos, zPos, xSize, zSize, floorNumber) {
 
-        //Set fixed positions for yPos (ground level) and ySize (standard ceiling height)
-        var yPos = (floorNumber-1)*2.4;
-        var ySize = 2.4*floorNumber;
+    //Set fixed positions for yPos (ground level) and ySize (standard ceiling height)
+    var yPos = (floorNumber - 1) * 2.4;
+    var ySize = 2.4 * floorNumber;
 
-        //Calculate new coordinates for (x,z)
-        var xNew = xPos + xSize;
-        var zNew = zPos + zSize;
+    //Calculate new coordinates for (x,z)
+    var xNew = xPos + xSize;
+    var zNew = zPos + zSize;
 
-        //Build geometry from Vectors
-        var geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
-        geometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
-        geometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
-        geometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
-        geometry.faces.push(new THREE.Face3(0, 1, 2));
-        geometry.faces.push(new THREE.Face3(0, 2, 3));
+    //Build geometry from Vectors
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
+    geometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
+    geometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
+    geometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
+    geometry.faces.push(new THREE.Face3(0, 1, 2));
+    geometry.faces.push(new THREE.Face3(0, 2, 3));
 
-        // Draw wall
-        var wallColor;
-        switch(floorNumber) {
-            case 1:
-                wallColor = 0x000000;
-                break;
-            case 2:
-                wallColor = 0xFF0000;
-                break;
-            default:
-                wallColor = 0x000000;
-                break;
-        }
-        var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: wallColor, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
-        scene.add(wall);
-};
+    // Draw wall
+    var wallColor;
+    switch (floorNumber) {
+        case 1:
+            wallColor = 0x000000;
+            break;
+        case 2:
+            wallColor = 0xFF0000;
+            break;
+        default:
+            wallColor = 0x000000;
+            break;
+    }
+    
+    //Create wall "mesh" from geometry and add wireframing
+    var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: wallColor, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
+
+    var wireframe = new THREE.EdgesHelper(wall, 0x000000);
+    scene.add(wireframe);
+
+    scene.add(wall);
+}
+;
 
 function findCenterPoint() {
     var cL, cR, cT, cB,
@@ -167,10 +176,11 @@ function findCenterPoint() {
             }
         }
         centerX = (cR + cL) / 2;
-        centerY = (cB + cT) / 2;       
+        centerY = (cB + cT) / 2;
     } else {
         centerX = 0, centerY = 0;
     }
     centerPoint = new fabric.Point(centerX, centerY);
     return centerPoint;
-};
+}
+;
