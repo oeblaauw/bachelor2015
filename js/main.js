@@ -8,6 +8,7 @@
  */
 
 //Declaring and initializing variables
+//This should be made more sexy
 //Perhaps some should go in the init() function
 var canvas = new fabric.Canvas('canvas', {selection: false, width: this.width, height: this.height, targetFindTolerance: 5, allowTouchScrolling: true});
 var gridCanvas = new fabric.Canvas('gridCanvas', {selection: false, width: 1500, height: 1000});
@@ -33,10 +34,11 @@ var currentFloors, maxFloor = 4;
 var jsonFloorNumber;
 var isDown = false;
 var deletePermitted = false;
+
 // Runs the init function
 init();
 
-//Run the initializing functions here
+//Run the initializing here
 function init() {
     checkbox.checked = false;
     floorNumber = 1,
@@ -46,7 +48,7 @@ function init() {
     loadCanvas();   //Else it will be overwritten by the load
 }
 
-//Function for drawing a non-selectable grid
+//Function for drawing a non-selectable grid, added to a grid-canvas
 function drawGrid() {
     var gridOptions = {
         stroke: '#ccc',
@@ -165,6 +167,9 @@ canvas.on('object:moving', function (options) {
      * This function snaps an object to the grid when moving it.
      * When multiple objects have been selected, the canvas groups all of the objects
      * inside a box with a padding, which we subtract in the code below.
+     * There is an error when trying to move several selected objects.
+     * Try to select multiple objects, move them, and them move them again without clearing the selection in the mean time
+     * Then we will get the padding-misalignment once again
      * 
      */var padding=0;
         if(canvas.getActiveGroup()) padding=10;
@@ -175,31 +180,16 @@ canvas.on('object:moving', function (options) {
     }); 
 });
 
-/*
- * The reason for seperating the delete function from the onclick
- * is because the function is also used by fabric.js
- * We should try to separate own code from fabric.js with an overwrite method,
- * preferably in an own js file
- */
-
 //Delete selected item or group of items
-/*
- * !!!
- * We currently have a problem with deleting multiple lines from the canvas
- * Look into this when the time is right!
- * 
- */
 deleteSelObject = function () {
     //Check if delete is permitted
     if(!deletePermitted) return;
     //Check to see if we have selected multiple objects
     if (canvas.getActiveGroup()) {
-        alert("Feil i slettefunksjon");
         canvas.getActiveGroup().forEachObject(function(o) {
             canvas.remove(o);
         });
         canvas.discardActiveGroup().renderAll();
-        
     } else {
         canvas.remove(canvas.getActiveObject());
         canvas.renderAll();
@@ -217,6 +207,7 @@ function saveCanvas() {
         console.log("Storage failed: " + e);
     }
 };
+
 //Function for loading the canvas from localStorage
 function loadCanvas() {
     //Get json from localStorage
@@ -224,7 +215,6 @@ function loadCanvas() {
     var json = JSON.parse(localStorage.getItem(jsonFloorNumber));
     //Return if there is no saved canvas data
     if(json === null) {
-        console.log(jsonFloorNumber + " had no data. Will now clear canvas and save.");
         clearCanvas();
         loadCanvas();
         return;
@@ -232,26 +222,28 @@ function loadCanvas() {
     if(floorNumber > 1) {
         var ghostNumber = "myFloor" + (floorNumber-1);
         var ghostJSON = JSON.parse(localStorage.getItem(ghostNumber));
-    }
-    ghostCanvas.loadFromJSON(ghostJSON, ghostCanvas.renderAll.bind(ghostCanvas), function(o, object) {
-        object.set({
-            stroke: 'rgba(100,100,255, 0.5'
+        ghostCanvas.loadFromJSON(ghostJSON, ghostCanvas.renderAll.bind(ghostCanvas), function(o, object) {
+            object.set({
+                stroke: 'rgba(100,100,255, 0.5'
+            });
         });
-    });
+    }
+    
     //Go through JSON
-    canvas.loadFromJSON(json, canvas.renderAll.bind(canvas));  
+    canvas.loadFromJSON(json, canvas.renderAll.bind(canvas));
 };
 
-//Function for clearing the canvas
-//This needs to be rewritten, maybe using the init() function. Some repeating code
+//Function for clearing the canvas on one floor
 function clearCanvas() {
     canvas.clear();
     if(floorNumber === 1) ghostCanvas.clear();
     saveCanvas();
 }
 
+//Function for clearing all floors
 function clearAll() {
-    for(var i=1;i<=4;i++) {
+    var c=currentFloors;
+    for(var i=1;i<=c;i++) {
         floorNumber = i;
         clearCanvas();
         if(floorNumber > 1) {
@@ -259,62 +251,48 @@ function clearAll() {
         }
     }
 }
-/*
- * Onclick functions for buttons
- */
 
-
-addFloorButton.onclick = function() {
-    if(currentFloors < maxFloor) {
-        currentFloors++;
-        var floorId = 'btn-floor-' + currentFloors;
-        document.getElementById(floorId).style.display = "inline";
-        deleteFloorButton.style.display = "inline";
-        localStorage.setItem('currentFloors', currentFloors);
-        changeFloor(currentFloors, true);
-    } 
-    if(currentFloors === maxFloor) {
-        addFloorButton.style.display = "none";
-    }
-};
+//Function for deleting a floor
 function deleteFloor() {
-    saveCanvas();
     if(currentFloors === 1) {
+        //Should actually never get into this, but if so, show alert message
         alert("Kan ikke slette første etasje!");
     } else {
+        //Change floorNumber to the last floor (currentFloors)
         floorNumber = currentFloors;
-        changeFloor(floorNumber, true);
-        clearCanvas();
-        currentFloors--;
-        localStorage.setItem("currentFloors", currentFloors);
-        floorNumber = 1;
-        loadFloors();
+        //Load this canvas
         loadCanvas();
-        changeFloor(floorNumber, true);
+        //Then clear it (which also saves it afterwards)
+        clearCanvas();
+        //Reduce the number of current floors
+        currentFloors--;
+        //Save this number to localStorage
+        localStorage.setItem("currentFloors", currentFloors);
+        //Refresh the floornumber-menu
+        loadFloors();
+        //Change view to floor #1
+        //Could maybe implement to change it to one less than the one we removed
+        //I.E: Remove floor 4, change to 3, remove floor 3, change to 2, etc
+        changeFloor(1, true);
     }
 };
-deleteFloorButton.onclick = deleteFloor;
-//Adding function to delete button
-floorButton1.onclick = function() {
-    changeFloor(1, false);
-};
-floorButton2.onclick = function() {
-    changeFloor(2, false);
-};
-floorButton3.onclick = function() {
-    changeFloor(3, false);
-};
-floorButton4.onclick = function() {
-    changeFloor(4, false);
-};
 
+/*
+ * 
+ * @param {type} floor - This is the floor number we are changing to
+ * @param {type} skipCheck - Boolean for skipping check of floorNumber
+ * @returns {undefined}
+ */
 function changeFloor(floor, skipCheck) {
-    saveCanvas();
+    saveCanvas(); //Not sure if this is needed here
     if(!skipCheck && floor === floorNumber) return;
     floorNumber = floor;
     document.getElementById('floor-selected').innerHTML = "Etasje " + floorNumber;
     loadCanvas();
 }
+
+//Function that loads the correct buttons in the floor-buttons-menu
+//Maybe rename this function
 function loadFloors() {
     currentFloors = JSON.parse(localStorage.getItem("currentFloors"));
     document.getElementById('btn-floor-1').style.display = "inline"; 
@@ -336,6 +314,46 @@ function loadFloors() {
         document.getElementById('btn-delete-floor').style.display = "inline"; 
     }
 };
+
+/*
+ * Onclick functions for buttons
+ */
+
+//Onclick for adding a new floor
+//Maybe separate this to function + onclick?
+addFloorButton.onclick = function() {
+    if(currentFloors < maxFloor) {
+        currentFloors++;
+        var floorId = 'btn-floor-' + currentFloors;
+        document.getElementById(floorId).style.display = "inline";
+        deleteFloorButton.style.display = "inline";
+        localStorage.setItem('currentFloors', currentFloors);
+        changeFloor(currentFloors, true);
+    } 
+    if(currentFloors === maxFloor) {
+        addFloorButton.style.display = "none";
+    }
+};
+
+//Onclick for deleting a floor
+deleteFloorButton.onclick = deleteFloor;
+
+//Adding function to delete button
+//We should try to get these buttons/functions into an array
+floorButton1.onclick = function() {
+    changeFloor(1, false);
+};
+floorButton2.onclick = function() {
+    changeFloor(2, false);
+};
+floorButton3.onclick = function() {
+    changeFloor(3, false);
+};
+floorButton4.onclick = function() {
+    changeFloor(4, false);
+};
+
+//Onclick for deleting a selected object
 deleteButton.onclick = deleteSelObject;
 
 //Adding function to clear button
@@ -356,16 +374,16 @@ updateButton.onclick = function () {
     var newMat = selector.options[selector.selectedIndex].value;
     var color;
     switch (newMat) {
-        case 'gips':
+        case 'Gips':
             color = 'black';
             break;
-        case 'tre':
+        case 'Tre':
             color = 'brown';
             break;
-        case 'betong':
+        case 'Betong':
             color = 'gray';
             break;
-        case 'glass':
+        case 'Glass':
             color = 'blue';
             break;
         default:
@@ -398,15 +416,6 @@ checkbox.onchange = function () {
     canvas.selection = checkbox.checked;
 
 };
-
-/*
- * Function for locating the center point in the canvas based on the drawn lines
- * Used for camera positioning in 3D view
- * Perhaps this can be implemented when creating a new line?
- * Problem if we delete a line that is listed as a cL/cR/cT/cB ? 
- * 
- */
-
 
 /*
  * Here we write some functions that are defined in fabric.js, but we need to 
@@ -555,7 +564,8 @@ fabric.Canvas.prototype._getActionFromCorner = function (target, corner) {
     return action;
 };
 
-/*
+//This doesn't work right now
+/* 
 fabric.Canvas.prototype._setupCurrentTransform = function (e, target) {
       if (!target) {
         return;
