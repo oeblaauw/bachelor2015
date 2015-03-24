@@ -254,6 +254,9 @@ function clearAll() {
     for(var i=1;i<=4;i++) {
         floorNumber = i;
         clearCanvas();
+        if(floorNumber > 1) {
+            deleteFloor();
+        }
     }
 }
 /*
@@ -274,7 +277,7 @@ addFloorButton.onclick = function() {
         addFloorButton.style.display = "none";
     }
 };
-deleteFloorButton.onclick = function() {
+function deleteFloor() {
     saveCanvas();
     if(currentFloors === 1) {
         alert("Kan ikke slette første etasje!");
@@ -290,7 +293,7 @@ deleteFloorButton.onclick = function() {
         changeFloor(floorNumber, true);
     }
 };
-
+deleteFloorButton.onclick = deleteFloor;
 //Adding function to delete button
 floorButton1.onclick = function() {
     changeFloor(1, false);
