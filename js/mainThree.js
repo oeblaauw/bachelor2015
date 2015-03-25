@@ -2,6 +2,7 @@
 // Set up the scene, camera, and renderer as global variables.
 var scene, camera, renderer;
 var linjeArray = [];
+//var floorGeometries = [0];
 
 init();
 animate();
@@ -116,38 +117,38 @@ function drawWall(xPos, zPos, xSize, zSize, floorNumber) {
     var xNew = xPos + xSize;
     var zNew = zPos + zSize;
 
-    //Build geometry from Vectors
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
-    geometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
-    geometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
-    geometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
-    geometry.faces.push(new THREE.Face3(0, 1, 2));
-    geometry.faces.push(new THREE.Face3(0, 2, 3));
+    //Build wall geometry from Vectors
+    var wallGeometry = new THREE.Geometry();
+    wallGeometry.vertices.push(new THREE.Vector3(xPos, ySize, zPos));
+    wallGeometry.vertices.push(new THREE.Vector3(xNew, ySize, zNew));
+    wallGeometry.vertices.push(new THREE.Vector3(xNew, yPos, zNew));
+    wallGeometry.vertices.push(new THREE.Vector3(xPos, yPos, zPos));
+    wallGeometry.faces.push(new THREE.Face3(0, 1, 2));
+    wallGeometry.faces.push(new THREE.Face3(0, 2, 3));
 
-    // Draw wall
-    var wallColor;
-    switch (floorNumber) {
-        case 1:
-            wallColor = 0x000000;
-            break;
-        case 2:
-            wallColor = 0xFF0000;
-            break;
-        default:
-            wallColor = 0x000000;
-            break;
-    }
-    
+//    //Update floor geometry from vectors
+//    if(floorGeometries[floorNumber]=== undefined){
+//        floorGeometries[floorNumber] = [];
+//        floorGeometries[floorNumber].push(new THREE.Vector2(xPos, zPos));
+//    }
+//    floorGeometries[floorNumber].push(new THREE.Vector2(xNew, zNew));
+
     //Create wall "mesh" from geometry and add wireframing
-    var wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: wallColor, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
-
+    var wall = new THREE.Mesh(wallGeometry, new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
     var wireframe = new THREE.EdgesHelper(wall, 0x000000);
-    scene.add(wireframe);
 
+    scene.add(wireframe);
     scene.add(wall);
 }
 ;
+//for (var i = 1; i < floorGeometries.length; i++) {
+//    floorShape = new THREE.Shape(floorGeometries[i]);
+//    floorGeometry = new THREE.ShapeGeometry(floorShape);
+//    floor = new THREE.Mesh(floorGeometry, new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.BackSide, opacity: 0.2, transparent: true}));
+//    floor.rotation.x = Math.PI/2;
+//    floor.position.y = 2.4 * (i-1);
+//    scene.add(floor);
+//}
 
 function findCenterPoint() {
     var cL, cR, cT, cB,
