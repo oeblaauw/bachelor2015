@@ -209,6 +209,7 @@ function loadCanvas() {
     //Get json from localStorage
     jsonFloorNumber = "myFloor" + floorNumber;
     var json = JSON.parse(localStorage.getItem(jsonFloorNumber));
+
     //Return if there is no saved canvas data
     if(json === null) {
         clearCanvas();
@@ -292,6 +293,10 @@ function changeFloor(floor, skipCheck) {
 //Maybe rename this function
 function loadFloors() {
     currentFloors = JSON.parse(localStorage.getItem("currentFloors"));
+    if(currentFloors === null) {
+        currentFloors = 1;
+        localStorage.setItem("currentFloors", currentFloors);
+    }
     document.getElementById('btn-floor-1').style.display = "inline"; 
     document.getElementById('btn-floor-2').style.display = "none"; 
     document.getElementById('btn-floor-3').style.display = "none"; 

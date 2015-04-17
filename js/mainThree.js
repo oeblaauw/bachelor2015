@@ -103,7 +103,11 @@ function init() {
 
     group = new THREE.Group();
     scene.add(group);
-    addSomePoints();
+    
+    if(linesArray.length > 0) {
+        addSomePoints();
+    }
+    
                 
     // Add OrbitControls so that we can pan around with the mouse.
     controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -361,13 +365,20 @@ function addSomePoints() {
                 continue;
             if (j > outline[2].y / 50)
                 continue;
-
+            //Points for first floor
             var point = {
                 x: i,
                 y: 0,
                 z: j
             };
+            //Points for second floor
+            var point2 = {
+                x: i,
+                y: 2.4,
+                z: j
+            };
             somePoints.push(point);
+            somePoints.push(point2);
         }
 
     }
@@ -418,14 +429,15 @@ function calcLengthRayCast() {
             var numberOfWalls = intersectsWalls.length;
 
             dbValue -= numberOfWalls * 3; //Gips
-
+            dbValue -= 0; //Noise
+            
             if (dbValue > -35) {
                 first.object.material.color.setHex(0x00ff48);
             }
-            else if (dbValue > -50) {
+            else if (dbValue > -40) {
                 first.object.material.color.setHex(0xffc700);
             }
-            else if (dbValue > -60) {
+            else if (dbValue > -45) {
                 first.object.material.color.setHex(0xff4800);
             } else {
                 first.object.material.color.setHex(0xff0000);
