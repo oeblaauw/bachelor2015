@@ -8,12 +8,9 @@
  */
 
 //Declaring and initializing variables
-//This should be made more sexy
-//Perhaps some should go in the init() function
 var canvas = new fabric.Canvas('canvas', {selection: false, width: this.width, height: this.height, targetFindTolerance: 5, allowTouchScrolling: true});
 var gridCanvas = new fabric.Canvas('gridCanvas', {selection: false, width: 1500, height: 1000});
 var ghostCanvas = new fabric.Canvas('ghostCanvas', {selection: false, width: 1500, height: 1000});
-var tempArray = [], tempArrayFloorNumber = 1;
 var deleteButton = document.getElementById('btn-delete'),
         clearButton = document.getElementById('btn-clear'),
         clearAllButton = document.getElementById('btn-clear-all'),
@@ -27,7 +24,7 @@ var deleteButton = document.getElementById('btn-delete'),
         deleteFloorButton = document.getElementById('btn-delete-floor');
 var width = canvas.width;
 var height = canvas.height;
-var grid = 50; //Size in px on grid
+var grid = 50; //Size of grid in px
 var objectSelected = false;
 var floorNumber; // Possible values are 1 - 4
 var currentFloors, maxFloor = 4;
@@ -45,7 +42,7 @@ function init() {
     currentFloors = 1;
     drawGrid();
     loadFloors();
-    loadCanvas();   //Else it will be overwritten by the load
+    loadCanvas();
 }
 
 //Function for drawing a non-selectable grid, added to a grid-canvas
@@ -62,7 +59,7 @@ function drawGrid() {
     }
 };
 
-//Event listener for pressing the mouse button
+//Event listener for pressing the left mouse button
 canvas.on('mouse:down', function (options) {
     /*Return if we are in selection mode, i.e. selecting multiple objects
      * This is true if the checkbox for multiple selection is checked
@@ -103,10 +100,9 @@ canvas.on('mouse:move', function (options) {
      * Return if the mouse button isn't pressed down, or if an object is selected.
      * Else: We are drawing a line, and updating its coordinates.
      */
-    if (!isDown)
+    if (!isDown || objectSelected) {
         return;
-    if (objectSelected)
-        return;
+    }
 
     var pointer = canvas.getPointer(options.e);
     line.set({x2: Math.round(pointer.x / grid) * grid, y2: Math.round(pointer.y / grid) * grid});
@@ -119,12 +115,11 @@ canvas.on('mouse:up', function (options) {
      * Return if we have selected an object
      * Else: Add the drawn line to the canvas
      */
-    if(canvas.selection) return;
     isDown = false;
-    if (objectSelected) {
+    if(canvas.selection || objectSelected) {
         return;
     }
-
+    
     //Making a copy of the drawn line
     var myLine = line;
     //Deleting the old line from the canvas. 
@@ -143,6 +138,8 @@ canvas.on('mouse:up', function (options) {
 canvas.on('object:selected', function (options) {
     objectSelected = true;
     document.getElementById("selectionMenu").style.display = 'inline';
+    //Only after 500ms we allow an object to be deleted.
+    //This is to prevent automatic delete if pressing the delete icon when selecting
     setTimeout(function() {
         deletePermitted = true;
     }, 500);
@@ -173,7 +170,6 @@ canvas.on('object:moving', function (options) {
      * 
      */var padding=0;
         if(canvas.getActiveGroup()) padding=10;
-        console.log(canvas.getActiveGroup());
         options.target.set({
         left: (Math.round(options.target.left / grid) * grid) - padding,
         top: (Math.round(options.target.top / grid) * grid) - padding
@@ -181,7 +177,7 @@ canvas.on('object:moving', function (options) {
 });
 
 //Delete selected item or group of items
-deleteSelObject = function () {
+function deleteSelObject() {
     //Check if delete is permitted
     if(!deletePermitted) return;
     //Check to see if we have selected multiple objects
@@ -219,17 +215,20 @@ function loadCanvas() {
         loadCanvas();
         return;
     }
+    //If floor is higher than 1, we load a ghost canvas, i.e. the floor below 
     if(floorNumber > 1) {
         var ghostNumber = "myFloor" + (floorNumber-1);
         var ghostJSON = JSON.parse(localStorage.getItem(ghostNumber));
         ghostCanvas.loadFromJSON(ghostJSON, ghostCanvas.renderAll.bind(ghostCanvas), function(o, object) {
             object.set({
-                stroke: 'rgba(100,100,255, 0.5'
+                stroke: 'rgba(255,100,100, 0.40)'
             });
         });
+    } else {
+        ghostCanvas.clear();
     }
     
-    //Go through JSON
+    //Load current floor from localStorage
     canvas.loadFromJSON(json, canvas.renderAll.bind(canvas));
 };
 
@@ -242,7 +241,7 @@ function clearCanvas() {
 
 //Function for clearing all floors
 function clearAll() {
-    var c=currentFloors;
+    var c = currentFloors;
     for(var i=1;i<=c;i++) {
         floorNumber = i;
         clearCanvas();
@@ -281,10 +280,8 @@ function deleteFloor() {
  * 
  * @param {type} floor - This is the floor number we are changing to
  * @param {type} skipCheck - Boolean for skipping check of floorNumber
- * @returns {undefined}
  */
 function changeFloor(floor, skipCheck) {
-    saveCanvas(); //Not sure if this is needed here
     if(!skipCheck && floor === floorNumber) return;
     floorNumber = floor;
     document.getElementById('floor-selected').innerHTML = "Etasje " + floorNumber;
@@ -315,13 +312,9 @@ function loadFloors() {
     }
 };
 
-/*
- * Onclick functions for buttons
- */
 
-//Onclick for adding a new floor
-//Maybe separate this to function + onclick?
-addFloorButton.onclick = function() {
+//Function for adding a new floor
+function addFloor() {
     if(currentFloors < maxFloor) {
         currentFloors++;
         var floorId = 'btn-floor-' + currentFloors;
@@ -335,11 +328,13 @@ addFloorButton.onclick = function() {
     }
 };
 
+//Onclick for adding a floor
+addFloorButton.onclick = addFloor;
+
 //Onclick for deleting a floor
 deleteFloorButton.onclick = deleteFloor;
 
-//Adding function to delete button
-//We should try to get these buttons/functions into an array
+//Onclick for floor buttons
 floorButton1.onclick = function() {
     changeFloor(1, false);
 };
@@ -362,6 +357,8 @@ clearButton.onclick = function () {
         clearCanvas();
     }
 };
+
+//Adding function to clear-all button
 clearAllButton.onclick = function() {
     if (confirm("Er du sikker? Dette vil slette alle etasjer.")) {
         clearAll();
@@ -414,11 +411,10 @@ updateButton.onclick = function () {
 //Activates selection mode when checkbox is checked
 checkbox.onchange = function () {
     canvas.selection = checkbox.checked;
-
 };
 
 /*
- * Here we write some functions that are defined in fabric.js, but we need to 
+ * Here we add some functions that are defined in fabric.js, but we need to 
  * overwrite them so they can be adjusted to satisfy our needs. The reason we
  * overwrite them here, is so that we don't change anything in the core code.
  * 

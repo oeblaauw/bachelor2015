@@ -12612,7 +12612,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
           mr  = new fabric.Point((br.x + tr.x)/2, (br.y + tr.y)/2),
           mb  = new fabric.Point((br.x + bl.x)/2, (br.y + bl.y)/2),
           mtr = new fabric.Point(mt.x + sinTh * this.rotatingPointOffset, mt.y - cosTh * this.rotatingPointOffset),
-          //modified by blaauw
+          //modified by Blaauw
           mm = new fabric.Point(mt.x, ml.y);
       // debugging
 

@@ -1,11 +1,23 @@
 
 // Set up the scene, camera, and renderer as global variables.
 var scene, camera, renderer;
-var linjeArray = [];
+var spheres = [],
+        plane,
+        raycaster = new THREE.Raycaster(),
+        mouse = new THREE.Vector2(),
+        offset = new THREE.Vector3(),
+        INTERSECTED, SELECTED;
+var somePoints = [];
+var outline = [];
+var group = new THREE.Group();
+var walls = [];
+var allObjects = [];
+var linesArray;
 //var floorGeometries = [0];
 
 init();
 animate();
+calcLengthRayCast();
 
 // Sets up the scene.
 function init() {
@@ -14,7 +26,7 @@ function init() {
     scene = new THREE.Scene();
     var WIDTH = window.innerWidth,
             HEIGHT = window.innerHeight;
-
+    
     // Create a renderer and add it to the DOM.
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(WIDTH, HEIGHT);
@@ -33,7 +45,11 @@ function init() {
         camera.aspect = WIDTH / HEIGHT;
         camera.updateProjectionMatrix();
     });
-
+    
+    renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
+    renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
+    renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
+    
     // Set the background color of the scene.
     renderer.setClearColor(0xFFFFFF, 1);
 
@@ -41,9 +57,9 @@ function init() {
     scene.add(axisHelper);
 
 
-    linjeArray = getLinesFrom2D();
-    for (var i = 0; i < linjeArray.length; i++) {
-        var linje = linjeArray[i],
+    linesArray = getLinesFrom2D();
+    for (var i = 0; i < linesArray.length; i++) {
+        var linje = linesArray[i],
                 refactor = 50,
                 x1 = linje.x1,
                 x2 = linje.x2,
@@ -66,19 +82,138 @@ function init() {
         drawWall(xPos, zPos, xSize, zSize, floorNumber);
     }
 
-
-    // Add OrbitControls so that we can pan around with the mouse.
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
     var centerPoint = findCenterPoint();
     var pX = centerPoint.x / 50;
     var pY = centerPoint.y / 50;
+    
+    //AddMoveable element
+    var geometry = new THREE.SphereGeometry(0.2, 32, 32);
+    var material = new THREE.MeshBasicMaterial({color: 0x383838});
+    var sphere = new THREE.Mesh(geometry, material);
+    sphere.position.set(pX, 1.2, pY);
+    scene.add(sphere);
+    spheres.push(sphere);
 
+    plane = new THREE.Mesh(
+            new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
+            new THREE.MeshBasicMaterial({color: 0x000000, opacity: 0.25, transparent: true})
+            );
+    plane.visible = false;
+    scene.add(plane);
 
+    group = new THREE.Group();
+    scene.add(group);
+    addSomePoints();
+                
+    // Add OrbitControls so that we can pan around with the mouse.
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    
     center = new THREE.Vector3(pX, 0, pY);
     controls.center = (center);
     controls.maxPolarAngle = Math.PI / 2;
 }
 
+function onDocumentMouseMove(event) {
+
+    event.preventDefault();
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -((event.clientY - 51) / window.innerHeight) * 2 + 1;
+
+    //
+
+    raycaster.setFromCamera(mouse, camera);
+
+    if (SELECTED) {
+       
+        var intersects = raycaster.intersectObject(plane);
+        SELECTED.position.copy(intersects[ 0 ].point.sub(offset));
+        if(SELECTED.position.y < 0) {
+           SELECTED.position.y = 0;
+       }
+        group.visible = false;
+        return;
+    }
+
+    var intersects = raycaster.intersectObjects(spheres);
+
+    if (intersects.length > 0) {
+
+        if (INTERSECTED != intersects[ 0 ].object) {
+
+            if (INTERSECTED)
+                INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+
+            INTERSECTED = intersects[ 0 ].object;
+            INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+
+            plane.position.copy(INTERSECTED.position);
+            plane.lookAt(camera.position);
+
+        }
+
+    } else {
+
+        if (INTERSECTED)
+            INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+
+        INTERSECTED = null;
+
+    }
+
+}
+
+function onDocumentMouseDown(event) {
+
+    event.preventDefault();
+
+    var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
+
+    var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+    var intersects = raycaster.intersectObjects(spheres);
+
+    if (intersects.length > 0) {
+
+        controls.enabled = false;
+
+        SELECTED = intersects[ 0 ].object;
+        
+        var intersects = raycaster.intersectObject(plane);
+        offset.copy(intersects[ 0 ].point).sub(plane.position);
+    }
+
+}
+
+function onDocumentMouseUp(event) {
+
+    event.preventDefault();
+
+    controls.enabled = true;
+
+    if (INTERSECTED) {
+
+        plane.position.copy(INTERSECTED.position);
+
+        SELECTED = null;
+
+        var routerPos = spheres[0].position,
+                rx = routerPos.x,
+                ry = routerPos.y,
+                rz = routerPos.z;
+
+        if (rx < outline[0].x / 50 || rx > outline[3].x / 50)
+            return;
+        if (rz < outline[1].y / 50 || rz > outline[2].y / 50)
+            return;
+        if (ry < 0)
+            return;
+
+        calcLengthRayCast();
+        group.visible = true;
+    }
+
+}
 // Renders the scene and updates the render as needed.
 function animate() {
 
@@ -86,24 +221,31 @@ function animate() {
     requestAnimationFrame(animate);
 
     // Render the scene.
+    renderer.sortObjects = false;
     renderer.render(scene, camera);
     controls.update();
 }
+;
 
+// Pulls the drawn lines from local storage
 function getLinesFrom2D() {
-    var linesArray = [];
-    var maxFloor = localStorage.getItem('currentFloors'); //Number of floors
+    // Array of lines from all floors
+    var lines = [];
+    // currentFloors equals the number of floors drawn
+    var maxFloor = localStorage.getItem('currentFloors');
+    // Loop through floors
     for (var i = 1; i <= maxFloor; i++) {
-        var floor = "myFloor" + i;
-        var jsonfloor = JSON.parse(localStorage.getItem(floor));
-        if (jsonfloor === null)
+        var floorID = "myFloor" + i;
+        var json = JSON.parse(localStorage.getItem(floorID));
+        if (json === null)
             return;
-        var array = jsonfloor.objects;
-        for (var j = 0; j < array.length; j++) {
-            linesArray.push(array[j]);
+        var objects = json.objects;
+        // Loop through current floor, and push lines to array
+        for (var j = 0; j < objects.length; j++) {
+            lines.push(objects[j]);
         }
     }
-    return linesArray;
+    return lines;
 }
 ;
 
@@ -134,7 +276,7 @@ function drawWall(xPos, zPos, xSize, zSize, floorNumber) {
 //    floorGeometries[floorNumber].push(new THREE.Vector2(xNew, zNew));
 
     //Create wall "mesh" from geometry and add wireframing
-    var wall = new THREE.Mesh(wallGeometry, new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
+    var wall = new THREE.Mesh(wallGeometry, new THREE.MeshBasicMaterial({color: 0xCCCCCC, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
     var wireframe = new THREE.EdgesHelper(wall, 0x000000);
 
     scene.add(wireframe);
@@ -153,15 +295,15 @@ function drawWall(xPos, zPos, xSize, zSize, floorNumber) {
 function findCenterPoint() {
     var cL, cR, cT, cB,
             centerX, centerY, centerPoint;
-    if (linjeArray.length > 0) {
-        var line = linjeArray[0];
+    if (linesArray.length > 0) {
+        var line = linesArray[0];
         cL = line.left;
         cR = line.left + line.width;
         cT = line.top;
         cB = line.top + line.height;
 
-        for (var i = 1; i < linjeArray.length; i++) {
-            line = linjeArray[i];
+        for (var i = 1; i < linesArray.length; i++) {
+            line = linesArray[i];
 
             if (line.left + line.width > cR) {
                 cR = line.left + line.width;
@@ -181,7 +323,114 @@ function findCenterPoint() {
     } else {
         centerX = 0, centerY = 0;
     }
+    
+    var topLeftPoint = new fabric.Point(cL, cT);
+    var topRightPoint = new fabric.Point(cR, cT);
+    var botLeftPoint = new fabric.Point(cL, cB);
+    var botRightPoint = new fabric.Point(cR, cB);
+    outline.push(topLeftPoint);
+    outline.push(topRightPoint);
+    outline.push(botLeftPoint);
+    outline.push(botRightPoint);
+                
     centerPoint = new fabric.Point(centerX, centerY);
+    
     return centerPoint;
 }
 ;
+
+function addSomePoints() {
+    somePoints = [];
+    group = new THREE.Group();
+    var routerPos = spheres[0].position,
+            rx = routerPos.x,
+            ry = routerPos.y,
+            rz = routerPos.z;
+
+
+    for (var i = -20 + rx; i < 20 + rx; i += 4) {
+
+        if (i < outline[0].x / 50)
+            continue;
+        if (i > outline[3].x / 50)
+            continue;
+
+        for (var j = -20 + rz; j < 20 + rz; j += 4) {
+
+            if (j < outline[1].y / 50)
+                continue;
+            if (j > outline[2].y / 50)
+                continue;
+
+            var point = {
+                x: i,
+                y: 0,
+                z: j
+            };
+            somePoints.push(point);
+        }
+
+    }
+    pointsToMesh();
+}
+
+function pointsToMesh() {
+    var geometry = new THREE.SphereGeometry(0.3, 32, 32);
+    allObjects = [];
+    for (var i = 0; i < somePoints.length; i++) {
+        var pointPos = somePoints[i],
+                sx = pointPos.x,
+                sy = pointPos.y,
+                sz = pointPos.z;
+        var material = new THREE.MeshBasicMaterial({color: 0x00ff48});
+        var sphere = new THREE.Mesh(geometry, material);
+        sphere.position.set(sx, sy, sz);
+        allObjects.push(sphere);
+        group.add(sphere);
+    }
+    scene.add(group);
+}
+
+function calcLengthRayCast() {
+    var milliWatts = 100;
+    var eirp = 10 * Math.log10(milliWatts);
+    var origin = spheres[0].position,
+            rx = origin.x,
+            ry = origin.y,
+            rz = origin.z;
+
+    for (var i = 0; i < allObjects.length; i++) {
+        var objectPos = allObjects[i].position,
+                sx = objectPos.x,
+                sy = objectPos.y,
+                sz = objectPos.z;
+        var direction = new THREE.Vector3(sx - rx, sy - ry, sz - rz).normalize();
+        var raycaster = new THREE.Raycaster(origin, direction, 0, 100);
+
+        var intersects = raycaster.intersectObjects(allObjects);
+        var intersectsWalls = raycaster.intersectObjects(walls, true);
+
+        if (intersects.length > 0) {
+            var first = intersects[0];
+            var distance = first.distance;
+            var loss = 20 * Math.log10(distance) + 40.05;
+            var dbValue = eirp - loss;
+            var numberOfWalls = intersectsWalls.length;
+
+            dbValue -= numberOfWalls * 3; //Gips
+
+            if (dbValue > -35) {
+                first.object.material.color.setHex(0x00ff48);
+            }
+            else if (dbValue > -50) {
+                first.object.material.color.setHex(0xffc700);
+            }
+            else if (dbValue > -60) {
+                first.object.material.color.setHex(0xff4800);
+            } else {
+                first.object.material.color.setHex(0xff0000);
+            }
+        }
+
+    }
+}            

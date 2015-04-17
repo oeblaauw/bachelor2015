@@ -1,0 +1,539 @@
+/* This CSS sets the default styles for the main navigation. */
+
+/* ---------- Main navigation ---------- */
+#content_navigation {
+	/*padding: 0px 30px 0px 10px;*/
+	padding-top: 10px;
+	padding-bottom: 5px;
+	padding-right: 20px;
+	padding-left: 15px;
+	line-height: 17px;
+	/*margin-left: 10px;
+	margin-right: 10px;*/
+	text-align: left;
+	clear: both;
+	/*background-color: blue;*/
+	border-bottom: solid 1px #eeeeee;
+	z-index: 1;
+	color: #222222;
+}
+
+#content_navigation a {
+	/*font-weight: bold;*/
+	padding: 5px 5px 4px 5px;
+	margin-left: 4px;
+	font-size: 12px;
+	font-weight:300;
+	margin-right: 4px;
+	color: #333333;
+	text-decoration: none;
+}
+
+#content-navigation a span{
+	line-height: 17px;
+}
+
+#content_navigation a:hover,
+#content_navigation .selected a {
+	/*background-color: #44b248;*/
+	/*background-color: #cccccc;*/
+	color: #bbbbbb;
+	text-decoration: underline;
+}
+
+#segment_navigation {
+	overflow: hidden;
+	padding-bottom: 5px;
+	margin-top: 0px;
+	margin-right: auto;
+	margin-bottom: 0px;
+	margin-left: auto;
+	text-align: right;
+	clear: right;
+	background: #fff;
+}
+
+#segment_navigation ul.nav{
+	float:left;
+	margin:14px 10px 0 15px;
+}
+
+	
+#navigation {
+}
+
+#navigation ul {
+	margin: 0 auto;
+}
+
+#navigation ul:after {
+	clear: both;
+	content: ".";
+	display: block;
+	height: 0;
+	visibility: hidden;
+}
+
+.ie7 #navigation ul {
+	height: 1%;
+}
+
+.ie6 #navigation, .ie6 #navigation ul {
+	height: 2em;
+	overflow: visible;
+}
+
+#navigation li {
+	float: left;
+	list-style-type: none;
+	position: relative;
+}
+
+#navigation .child-menu {
+	display: none;
+}
+
+#navigation .selected .child-menu {
+	background-image: none;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-left: auto;
+	text-align: right;
+	/*width: 400px;*/
+	float: right;
+	display: block;
+	color: #1f448d;
+}
+#navigation #nav_line {
+	/*float: right;
+	width: 820px;
+	width: 958px;
+	-moz-border-radius: 18px;
+	border-radius: 18px;*/
+}	
+
+#navigation #search_window {
+	float: right;
+	clear:right;
+	background-position: 0px 5px;
+	height: 25px;
+	padding: 10px 0px 7px 10px;
+}
+
+#navigation #search_window .google.sbox{
+	float:left;
+}
+
+/* ---------- Dock ---------- */
+
+#togglecmstoolbar {
+	position: absolute;
+	left: 50%;
+	width: 30px;
+	height: 11px;
+	margin-top: 5px;
+}
+
+#togglecmstoolbar a {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+#togglecmstoolbar.toolbarup {
+	background: transparent url(/web-altibox_fox-theme/images/navigation/toolbar_up.png) no-repeat top center;
+}
+
+#togglecmstoolbar.toolbardown {
+	background: transparent url(/web-altibox_fox-theme/images/navigation/toolbar_down.png) no-repeat top center;
+}
+
+#cmstoolbar {
+	background: transparent url(/web-altibox_fox-theme/images/common/trans_bottom.png) no-repeat bottom center;
+	padding-top: 10px;
+	height: 50px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.lfr-dock {
+	/*position: absolute;
+	right: 1%;*/
+	/*left: 1%;
+	top: 10px;*/
+	margin-left: auto;
+	margin-right: auto;
+	top: 0px;
+	/*background-position: 0px 0px*/
+}
+
+.lfr-dock h2 {
+	font-size: 1.2em;
+	margin-bottom: 0.5em;
+	padding-left: 2em;
+	text-align: left;
+}
+
+.lfr-dock ul {
+	display: inline;
+	float: left;
+}
+
+.lfr-dock li {
+	display: inline;
+	float: left;
+	margin-left: 15px;
+}
+
+.lfr-dock li a {
+	background: url() no-repeat 0 50%;
+	padding: 2px 0 2px 20px;
+}
+
+.lfr-dock li.home a {
+	background-image: url(/web-altibox_fox-theme/images/dock/home.png);
+}
+
+.lfr-dock li.control-panel a {
+	background-image: url(/web-altibox_fox-theme/images/dock/control_panel.png);
+}
+
+.lfr-dock li.my-account a {
+	background-image: url(/web-altibox_fox-theme/images/dock/my_account.png);
+}
+
+.lfr-dock li.sign-in a {
+	background-image: url(/web-altibox_fox-theme/images/dock/sign_in.png);
+}
+
+.lfr-dock li.sign-out a {
+	background-image: url(/web-altibox_fox-theme/images/dock/sign_out.png);
+}
+
+.lfr-dock li.add-content a {
+	background-image: url(/web-altibox_fox-theme/images/dock/add_content.png);
+}
+
+.lfr-dock li.layout a {
+	background-image: url(/web-altibox_fox-theme/images/dock/layout.png);
+}
+
+.lfr-dock li.page-settings a {
+	background-image: url(/web-altibox_fox-theme/images/dock/page_settings.png);
+}
+
+.lfr-dock li.staging a {
+	background-image: url(/web-altibox_fox-theme/images/dock/staging.png);
+}
+
+.lfr-dock li.my-places a {
+	background-image: url(/web-altibox_fox-theme/images/dock/my_places.png);
+}
+
+.lfr-dock li.toggle-controls a {
+	background-image: url(/web-altibox_fox-theme/images/common/checked.png);
+}
+
+.controls-hidden .lfr-dock li.toggle-controls a {
+	background-image: url(/web-altibox_fox-theme/images/common/unchecked.png);
+}
+
+/*.lfr-dock li.my-places {
+	display: none;
+}*/
+
+ul.aui-toolbar li.toggle-controls {
+	/*display: none;*/
+	margin-top:4px;
+	margin-left:10px;
+}
+
+
+/* ---------- Interactive Dock ---------- */
+
+.js .interactive-mode {
+	background: #020509 url(/web-altibox_fox-theme/images/dock/center_bg.png) repeat-x;
+	min-width: 180px;
+	width: 180px;
+	position: absolute;
+	right: 1%;
+}
+
+.js .interactive-mode h2 {
+	background: url(/web-altibox_fox-theme/images/dock/right_bg.png) no-repeat 100% 0;
+	font-size: 1em;
+	margin: 0;
+	padding: 0 37px 0 0;
+	position: relative;
+	z-index: 82;
+}
+
+.js .interactive-mode h2 span {
+	background: url(/web-altibox_fox-theme/images/dock/left_bg.png) no-repeat 0 0;
+	border-right: 1px solid #34404F;
+	color: #FFF;
+	display: block;
+	font-size: 1em;
+	height: 15px;
+	line-height: 1;
+	margin-bottom: 0;
+	padding: 10px 20px 4px 20px;
+}
+
+.js .lfr-dock.expanded .lfr-dock-list-container {
+	top: -2px;
+}
+
+.js .interactive-mode ul {
+	background: #FFF;
+	border: 1px solid;
+	border-color: #DEDEDE #BFBFBF #BFBFBF #DEDEDE;
+	display: none;
+	float: none;
+}
+
+.js .interactive-mode li {
+	border-top: 1px solid #DEDEDE;
+	clear: both;
+	display: block;
+	float: none;
+	margin: 0;
+	padding: 2px;
+}
+
+.js .interactive-mode li a {
+	background-position: 8px 50%;
+	background-repeat: no-repeat;
+	display: block;
+	margin-left: 0;
+	padding: 5px 0;
+	text-decoration: none;
+}
+
+.js .interactive-mode li a, .js .interactive-mode li a:hover {
+	background-position: 8px 50%;
+	padding-left: 30px;
+}
+
+.js .interactive-mode li a:hover, .js .interactive-mode .my-places li.current a:hover {
+	color: #FFF;
+}
+
+.js .interactive-mode .lfr-dock-list li.first {
+	border-top: none;
+}
+
+.js .lfr-dock.interactive-mode .my-places li a {
+	background-image: none;
+}
+
+.js .interactive-mode .my-places li {
+	background-position: 5px 50%;
+	background-repeat: no-repeat;
+}
+
+.js .lfr-dock.interactive-mode .my-places.lfr-flyout.has-children > ul {
+	margin-right: -1px;
+}
+
+.js .interactive-mode .my-places li.current-community {
+	background-color: #D3DADD;
+}
+
+.js .interactive-mode .my-places li h3 {
+	font-size: 1em;
+	font-weight: normal;
+	margin: 0;
+}
+
+.js .interactive-mode .lfr-flyout.has-children h3 {
+	min-width: 175px;
+}
+
+.js .lfr-dock.interactive-mode .my-places li h3 a {
+	background-image: url(/web-altibox_fox-theme/images/dock/my_place.png);
+}
+
+.js .interactive-mode .lfr-flyout.has-children ul {
+	display: none;
+	margin-left: 0;
+	top: -1px;
+}
+
+.js .interactive-mode .my-places li.public a {
+	background-image: url(/web-altibox_fox-theme/images/dock/my_places_public.png);
+}
+
+.js .interactive-mode .my-places li.private a {
+	background-image: url(/web-altibox_fox-theme/images/dock/my_places_private.png);
+}
+
+.js .interactive-mode .my-places li.current {
+	background-color: #DFF4FF;
+}
+
+.js .interactive-mode .my-places li.current a {
+	background: url(/web-altibox_fox-theme/images/dock/my_place_current.png) no-repeat 10px 50%;
+	margin: 0;
+	padding-left: 35px;
+}
+
+.js .interactive-mode li:hover, .js .interactive-mode .my-places li:hover {
+	background-color: #828F95;
+}
+
+.js .interactive-mode li:hover a:hover, .js .interactive-mode li:hover > a, .js .interactive-mode li:hover > h3 > a {
+	background-color: #828F95;
+	color: #FFF;
+}
+
+.ie6.js .interactive-mode li a:hover {
+	background-color: #828F95;
+	color: #FFF;
+}
+
+.js .interactive-mode .my-places ul li a.add-page {
+	top: 7px;
+}
+
+.js .interactive-mode .group-end {
+	border-bottom: 2px solid #DEDEDE;
+}
+
+.ie6.js .interactive-mode .taglib-my-places li {
+	height: 24px;
+}
+
+.ie6.js .lfr-dock.interactive-mode {
+	white-space: nowrap;
+	width: 150px;
+}
+
+.ie6.js .lfr-dock.interactive-mode li {
+	height: 1%;
+	width: 100%;
+}
+
+.ie6.js .interactive-mode .lfr-flyout.has-children {
+	width: 150px;
+}
+
+.js .interactive-mode li.toggle-controls {
+	display: block;
+}
+
+.js .interactive-mode li.toggle-controls a {
+	background-image: url(/web-altibox_fox-theme/images/common/checked.png);
+}
+
+.js .controls-hidden .interactive-mode li.toggle-controls a {
+	background-image: url(/web-altibox_fox-theme/images/common/unchecked.png);
+}
+
+/* ---------- Add/remove page ---------- */
+
+.js .delete-tab {
+	background: url(/web-altibox_fox-theme/images/common/remove.png) no-repeat 42%;
+	cursor: pointer;
+	display: block;
+	height: 8px;
+	position: absolute;
+	right: 2px;
+	text-indent: -9999em;
+	top: 2px;
+	width: 8px;
+}
+
+/*------ Navigation portlet ------*/
+
+.nav-menu li a.ancestor {
+	font-weight: bold;
+}
+
+.nav-menu li a.selected {
+	color: #000;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.nav-menu ul {
+	padding-left: 10px;
+}
+
+#togglepartnerselect {
+	position: absolute;
+	top: 88px;
+	/*left: 0px;*/
+}
+
+.tab_navigation {
+	margin-left: 25px;
+}
+
+.ie .tab_navigation {
+	/*margin-top: 35px;
+	height: 25px;
+	margin-left: 25px;
+	margin-bottom: 0px;*/
+}
+
+#tab_navigation .tab a span {
+	background: url(/web-altibox_fox-theme/images/custom/tabs/tab_not_selected.png) no-repeat #ffffff;
+	background-position: right top;
+	padding-top: 3px;
+	margin-top: 4px;
+	height: 18px;
+	float: left;
+	padding-right: 16px;
+	z-index: 2;
+	cursor: pointer;
+}
+
+#tab_navigation .tab a {
+	background: url(/web-altibox_fox-theme/images/custom/tabs/tab_not_selected.png) no-repeat;
+	background-position: left 4px;
+	padding-left: 16px;
+	text-decoration: none;
+	float: left;
+	color: #888888;
+	z-index: 1;
+	height: 100%;
+	margin-right: 10px;
+	display: block;
+	cursor: pointer;
+}
+
+#tab_navigation .selected .tab a span {
+	background: url(/web-altibox_fox-theme/images/custom/tabs/tab_selected.png) no-repeat #ffffff;
+	background-position: right top;
+	padding-top: 5px;
+	margin-top: 0px;
+	height: 22px;
+	float: left;
+	padding-right: 16px;
+	z-index: 2;
+	cursor: pointer;
+}
+
+#tab_navigation.tabs-671-white .selected .tab a span {
+	background: url(/web-altibox_fox-theme/images/tabs/navigation-tabs-background-white.png) no-repeat #ffffff;
+}
+
+#tab_navigation .selected .tab a {
+	background: url(/web-altibox_fox-theme/images/custom/tabs/tab_selected.png) no-repeat #ffffff;
+	background-position: left top;
+	padding-left: 16px;
+	text-decoration: none;
+	font-weight: bold;
+	float: left;
+	color: #000000;
+	z-index: 1;
+	display: block;
+	height: 100%;
+	margin-right: 10px;
+	cursor: pointer;
+}
+#tab_navigation.tabs-671-white .selected .tab a {
+	background: url(/web-altibox_fox-theme/images/tabs/navigation-tabs-background-white.png) no-repeat #ffffff;
+}
+
