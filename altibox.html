@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="no-js altibox">
     <head>
-        <script type="text/javascript" src="/altibox/js/commons/jquery-latest.min.js"></script>
-        <script type="text/javascript" src="/altibox/js/commons/jquery-latest.min.js"></script>
+        <script src="js/altibox/jquery-latest.min.js" type="text/javascript"></script>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <title></title>
@@ -19,6 +18,8 @@
         <link rel="stylesheet" href="/altibox/css/icomoon.css" 		/> -->
         <link rel="stylesheet" href="css/altibox/profile.min.css"	 			/>
         <script src="js/altibox/profile.min.js"></script>
+        <link href="css/main.css" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" href="css/bootstrap.min.css">
         <!--[if lt IE 9]>
         <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
         <script>window.html5 || document.write('<script src="js/vendor/html5shiv.js"><\/script>')</script>
@@ -28,7 +29,7 @@
         <div id="wrapper" class="container">
             <div id="partner-wrapper">
                 <div id="altibox-content-wrapper">
-                    <div class="row">
+                    <div class="row-fluid">
                         <div class="span3">
                             <div class="well sidebar-nav">
                                 <h2 id="floor-selected">Etasje 1</h2>
@@ -41,18 +42,25 @@
                                     <button id="btn-floor-add" class="btn btn-default" title="Legg til etasje">+</button>
                                 </div>
 
+
                                 <h2>Mine valg</h2>
-                                <div class="checkbox">
-                                    <label>
-                                        <input id="chk-select" type="checkbox" name="chk-select"> Velg flere
-                                    </label>
+                                <div>
+                                    <button id="btn-draw" class="btn btn-default" title="Tegn">
+                                        <span id="span-draw" class="glyphicon glyphicon-pencil"></span>
+                                    </button>
+                                    <button id="btn-multiple" class="btn btn-default" title="Marker">
+                                        <span id="span-multiple" class="glyphicon glyphicon-hand-up"></span>
+                                    </button>
                                 </div>
+                                <br/>
                                 <button id="btn-clear" class="btn btn-default">Tøm etasje</button>
                                 <button id="btn-clear-all" class="btn btn-default">Tøm hele boligen</button>
 
 
-                                <div id="selectionMenu" style="display:inline">
-                                    <h2>Endre vegg</h2>
+
+
+                                <div id="selectionMenu" style="display:none">
+                                    <h2>Endre veggmaterial</h2>
                                     <div id="chosenMaterial"></div>
                                     <select id="select-material" class="dropdown-header">
                                         <option value="Gips">Gips</option>
@@ -61,7 +69,7 @@
                                         <option value="Glass">Glass</option>
                                     </select><br/>
 
-                                    <button id="btn-delete" class="btn btn-default">Slett</button>
+                                    <button id="btn-delete" class="btn btn-default">Fjern</button>
                                     <button id="btn-update" class="btn btn-default">Oppdater</button>
                                 </div>
                             </div><!--/.well -->
@@ -70,28 +78,40 @@
                             <div class="hero-unit">
                                 <h1>Hjelp!</h1>
                                 <p>
-                                    Altibox theme is built upon the powerful <strong>Twitter Bootstrap</strong> development framework and comes packaged with several pre-styled,
-                                    ready to use elements right out of the box. Elements are easy to integrate, production-ready, and some are even mobile responsive.<br />
-                                    Simply find an element, copy the code snippet, and you're ready to go!
+                                    Tegn din bolig i 2D, for deretter å se resultatet i 3D!
                                 </p>
-                                <p>
-                                    <a href="scaffolding.html" class="btn btn-primary btn-large">Read more &raquo;</a>
-                                </p>
+                                <ul>
+                                    <li>Trykk og dra for å tegne en vegg</li>
+                                    <li>Klikk på en linje for å endre veggen</li>
+                                    <li>"+" legger til en ny etasje</li>
+                                    <li>"-" fjerner den siste etasjen</li>
+                                    <li>"Tøm etasje" sletter det du har tegnet i nåværende etasje</li>
+                                    <li>"Tøm hele boligen" sletter alt du har tegnet</li>
+                                </ul>
+                                <a href="altibox3d.html" ><button type="button" class="btn btn-success">Gå til 3D-visning >></button></a>
                             </div>
                         </div><!--/span-->
                     </div><!--/row-->
                     <div class="row">
-                        <div class="span12">
-                            <p>
-                                    Altibox theme is built upon the powerful <strong>Twitter Bootstrap</strong> development framework and comes packaged with several pre-styled,
-                                    ready to use elements right out of the box. Elements are easy to integrate, production-ready, and some are even mobile responsive.<br />
-                                    Simply find an element, copy the code snippet, and you're ready to go!
-                                </p>
+                        <div class="span12" >
+                            <canvas id="gridCanvas" width="1201" height="1000">
+                                Get a new browser
+                            </canvas>
+                            <canvas id="ghostCanvas" width="1201" height="1000">
+                                Get a new browser
+                            </canvas>
+                            <canvas id="canvas" width="1201" height="1000">
+                                Denne applikasjonen benytter et medium kalt HTML5 Canvas.
+                                Hvis denne teksten vises, betyr det at din nettleser ikke støtter HTML5 Canvas.<br/><br/>
+                                <!--This text is displayed if your browser does not support HTML5 Canvas.-->
+                            </canvas>
+                            <script src="js/fabric.js" type="text/javascript"></script>
+                            <script src="js/main.js" type="text/javascript"></script>
                         </div><!--/span-->
                     </div><!--/row-->
                 </div>
             </div>
-            <div id="partner-wrapper-bottom">
+            <!--<div id="partner-wrapper-bottom">
                 <div id="content-wrapper-bottom" class="png">
                     <div id="footer">
                         <div id="altiboxContactInfo">
@@ -99,8 +119,15 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>-->
         </div>
+        <script>
+        jQuery(document).ready(function($) {
+            $.get("altibox/menu.html", function(menu) {
+                $("#partner-wrapper").prepend(menu);
+            });			
+        });
+        </script>
     </body>
 </html>
 

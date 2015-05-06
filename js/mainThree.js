@@ -13,6 +13,7 @@ var group = new THREE.Group();
 var walls = [];
 var allObjects = [];
 var linesArray;
+var numberOfFloors = 1;
 //var floorGeometries = [0];
 
 init();
@@ -237,6 +238,7 @@ function getLinesFrom2D() {
     var lines = [];
     // currentFloors equals the number of floors drawn
     var maxFloor = localStorage.getItem('currentFloors');
+    numberOfFloors = maxFloor;
     // Loop through floors
     for (var i = 1; i <= maxFloor; i++) {
         var floorID = "myFloor" + i;
@@ -365,20 +367,16 @@ function addSomePoints() {
                 continue;
             if (j > outline[2].y / 50)
                 continue;
-            //Points for first floor
-            var point = {
-                x: i,
-                y: 0,
-                z: j
-            };
-            //Points for second floor
-            var point2 = {
-                x: i,
-                y: 2.4,
-                z: j
-            };
-            somePoints.push(point);
-            somePoints.push(point2);
+
+            //For each floor
+            for(var k = 0; k < numberOfFloors; k++) {
+                var point = {
+                    x: i,
+                    y: k*2.4,
+                    z: j
+                };
+                somePoints.push(point);
+            }
         }
 
     }
@@ -393,7 +391,7 @@ function pointsToMesh() {
                 sx = pointPos.x,
                 sy = pointPos.y,
                 sz = pointPos.z;
-        var material = new THREE.MeshBasicMaterial({color: 0x00ff48});
+        var material = new THREE.MeshBasicMaterial({color: 0x2ae300});
         var sphere = new THREE.Mesh(geometry, material);
         sphere.position.set(sx, sy, sz);
         allObjects.push(sphere);
@@ -403,7 +401,7 @@ function pointsToMesh() {
 }
 
 function calcLengthRayCast() {
-    var milliWatts = 100;
+    var milliWatts = 100; //2.4 GHz
     var eirp = 10 * Math.log10(milliWatts);
     var origin = spheres[0].position,
             rx = origin.x,
@@ -423,24 +421,32 @@ function calcLengthRayCast() {
 
         if (intersects.length > 0) {
             var first = intersects[0];
+            console.log(first);
             var distance = first.distance;
             var loss = 20 * Math.log10(distance) + 40.05;
             var dbValue = eirp - loss;
             var numberOfWalls = intersectsWalls.length;
-
+            console.log(Math.floor(first.object.position.y/2.4) * 4); // Floor
             dbValue -= numberOfWalls * 3; //Gips
             dbValue -= 0; //Noise
-            
-            if (dbValue > -35) {
-                first.object.material.color.setHex(0x00ff48);
+
+            if (dbValue > -38) {
+                first.object.material.color.setHex(0x2ae300);
+            } 
+            else if( dbValue > - 41) {
+                first.object.material.color.setHex(0xa8e300);
             }
-            else if (dbValue > -40) {
-                first.object.material.color.setHex(0xffc700);
+            else if (dbValue > -44) {
+                first.object.material.color.setHex(0xfdff00);
             }
-            else if (dbValue > -45) {
-                first.object.material.color.setHex(0xff4800);
-            } else {
-                first.object.material.color.setHex(0xff0000);
+            else if (dbValue > -47) {
+                first.object.material.color.setHex(0xffdb00);
+            }
+            else if (dbValue > -50) {
+                first.object.material.color.setHex(0xff9a00);
+            } 
+            else {
+                first.object.material.color.setHex(0xff3300);
             }
         }
 

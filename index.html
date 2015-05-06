@@ -54,7 +54,7 @@
               </div>
               <div class="col-md-2">
                   <h2 id="floor-selected">Etasje 1</h2>
-                  <div class="btn-group">
+                  <div class="btn-group" role="group">
                       <button id="btn-delete-floor" class="btn btn-default" title="Fjern siste etasje">-</button>
                       <button id="btn-floor-1" class="btn btn-default" title="Første etasje">1</button>
                       <button id="btn-floor-2" class="btn btn-default" title="Andre etasje">2</button>
@@ -64,17 +64,22 @@
                   </div>
                   <div>
                       <h2>Mine valg</h2>
-                      <div class="checkbox">
-                        <label>
-                          <input id="chk-select" type="checkbox" name="chk-select"> Velg flere
-                        </label>
+                      <div>
+                          <button id="btn-draw" class="btn btn-default" title="Tegn">
+                              <span id="span-draw" class="glyphicon glyphicon-pencil"></span>
+                          </button>
+                          <button id="btn-multiple" class="btn btn-default" title="Marker">
+                              <span id="span-multiple" class="glyphicon glyphicon-hand-up"></span>
+                          </button>
                       </div>
+                      <br/>
                       <button id="btn-clear" class="btn btn-default">Tøm etasje</button>
                       <button id="btn-clear-all" class="btn btn-default">Tøm hele boligen</button>
                       
                   </div>
                   
                   <hr>
+                  
                   
                   <div id="selectionMenu" style="display:none">
                     <h2>Endre vegg</h2>
@@ -86,7 +91,7 @@
                       <option value="Glass">Glass</option>
                     </select><br/>
                     
-                    <button id="btn-delete" class="btn btn-default">Slett</button>
+                    <button id="btn-delete" class="btn btn-warning">Slett</button>
                     <button id="btn-update" class="btn btn-default">Oppdater</button>
                     </div>
               </div>

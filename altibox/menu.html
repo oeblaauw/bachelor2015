@@ -1,0 +1,98 @@
+<div id="partner-wrapper">
+	
+	<div id="user-bar"> <div id="mypages-users-welcome"> <span id="mypages-users" class="icon-users-3"></span> <h1 class="user-account">Nils Jørgen Hattemaker</h1><a href="/mine-sider">Mine sider</a> <span class="seperator">|</span> <a href="#" id="/c/portal/logout">Logg ut</a> </div> </div>
+	<div id="banner"> <div id="company_logo"> <h1 class="logo"> <a class="png" href="http://localhosthack.snartibox.no/web/guest"></a> </h1> </div> </div>
+	<div id="topnav">
+		<ul class="nav nav-pills">
+			<li>
+				<a onclick="javascript:location.href='scaffolding.html'" class="segment scaffolding">
+					Scaffolding
+				</a>
+			</li>
+			<li>
+				<a onclick="javascript:location.href='base-css.html'" class="segment basecss">
+					Base CSS
+				</a>
+			</li>
+			<li>
+				<a onclick="javascript:location.href='components.html'" class="segment components">
+					Components
+				</a>
+			</li>
+			<li>
+				<a onclick="javascript:location.href='javascript.html'" class="segment javascript">
+					JavaScript
+				</a>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="navbar">
+	<div class="navbar-inner">
+		<div class="container">
+
+			<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </a>
+
+			<a class="brand" href="http://localhosthack.snartibox.no/altibox/apps/profile/#altibox/apps/profile"><img src="logo.png"></a>
+			<form class="navbar-search pull-right">
+				<div class="input-prepend">
+					<span class="add-on"><i class="icon-search"></i></span>
+					<input type="text" class="search-query" placeholder="Søk i altibox">
+				</div>
+			</form>
+			
+			
+			<!-- Everything you want hidden at 940px or less, place within here -->
+			<div class="nav-collapse collapse">
+				<!-- .nav, .navbar-search, .navbar-form, etc -->
+				<ul class="nav">
+					<li>
+						<a href="http://chill.altibox.no"><span>Chill</span></a>
+					</li>
+					<li class="active">
+						<a href="http://localhosthack.snartibox.no/altibox/apps/profile/#privat/internett">Internett</a>
+					</li>
+					<li class="divider-vertical">
+						<a href="http://localhosthack.snartibox.no/altibox/apps/profile/#privat/tv">Tv</a>
+					</li>
+					<li class="divider-vertical">
+						<a href="http://localhosthack.snartibox.no/altibox/apps/profile/#privat/ip-telefoni">Hjemmetelefon</a>
+					</li>
+					<li class="divider-vertical">
+						<a href="http://localhosthack.snartibox.no/altibox/apps/profile/#privat/mobil">Mobil</a>
+					</li>
+					<li class="divider-vertical">
+						<a href="http://localhosthack.snartibox.no/altibox/apps/profile/#privat/alarm">Alarm</a>
+					</li>
+					<li class="divider-vertical">
+						<a href="http://localhosthack.snartibox.no/altibox/apps/profile/#privat/kundeservice">Kundeservice</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="content-wrapper-top" class="png">
+	<!-- Level 2 -->
+	<div id="content_navigation" class="menu-level2">
+		<span id="level2-menu-item_1" class="selected"> <a href="http://localhosthack.snartibox.no/privat/internett/raskere-internett"><span>Hastigheter</span></a> </span><span id="level2-menu-item_2" class=""> <a href="http://localhosthack.snartibox.no/privat/internett/sikkerhet"><span>Sikkerhet</span></a> </span><span id="level2-menu-item_3" class=""> <a href="http://localhosthack.snartibox.no/privat/internett/epost-og-hjemmeside"><span>E-post og hjemmeside</span></a> </span><span id="level2-menu-item_4" class=""> <a href="http://localhosthack.snartibox.no/privat/internett/spillservere"><span>Spillservere</span></a> </span><span id="level2-menu-item_5" class=""> <a href="http://localhosthack.snartibox.no/privat/internett/memory"><span>Memory</span></a> </span><span id="level2-menu-item_6" class=""> <a href="https://mail.altibox.no" target="_blank"><span>Les e-post</span></a> </span><span id="level2-menu-item_7" class=""> <a href="http://localhosthack.snartibox.no/privat/internett/brukerveiledning"><span>Brukerveiledning</span></a> </span>
+	</div>
+</div>
+<script>
+	var nonFocusedWidth = 80;
+	var focusedWidth = 150;
+	var sInput = $(".search-query");
+
+	sInput.css("width", nonFocusedWidth);
+
+	sInput.focus(function() {
+		sInput.css("width", focusedWidth);
+	});
+
+	sInput.blur(function() {
+		sInput.css("width", nonFocusedWidth);
+	}); 
+</script>

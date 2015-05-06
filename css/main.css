@@ -8,7 +8,7 @@ body {
 }
 
 canvas {
-    background: transparent; 
+    background: transparent;
 }
 .canvas-container {
     position: absolute !important;

@@ -8,14 +8,15 @@
  */
 
 //Declaring and initializing variables
-var canvas = new fabric.Canvas('canvas', {selection: false, width: this.width, height: this.height, targetFindTolerance: 5, allowTouchScrolling: true});
+var canvas = new fabric.Canvas('canvas', {selection: false, width: this.width, height: this.height, targetFindTolerance: 5});
 var gridCanvas = new fabric.Canvas('gridCanvas', {selection: false, width: 1500, height: 1000});
 var ghostCanvas = new fabric.Canvas('ghostCanvas', {selection: false, width: 1500, height: 1000});
 var deleteButton = document.getElementById('btn-delete'),
         clearButton = document.getElementById('btn-clear'),
         clearAllButton = document.getElementById('btn-clear-all'),
         updateButton = document.getElementById('btn-update'),
-        checkbox = document.getElementById('chk-select'),
+        selectionButton = document.getElementById('btn-multiple'),
+        drawButton = document.getElementById('btn-draw'),
         floorButton1 = document.getElementById('btn-floor-1'),
         floorButton2 = document.getElementById('btn-floor-2'),
         floorButton3 = document.getElementById('btn-floor-3'),
@@ -37,7 +38,8 @@ init();
 
 //Run the initializing here
 function init() {
-    checkbox.checked = false;
+    drawButton.setAttribute('class', 'btn btn-success');
+    selectionButton.setAttribute('class', 'btn btn-default');
     floorNumber = 1,
     currentFloors = 1;
     drawGrid();
@@ -53,16 +55,28 @@ function drawGrid() {
         selectable: false,
         evented: false
     };
+    var gridOptionsBold = {
+        stroke: '#000',
+        strokeWidth: 3,
+        selectable: false,
+        evented: false,
+        strokeLineCap: 'square'
+    };
     for (var i = 0; i < (width / grid); i++) {
         gridCanvas.add(new fabric.Line([i * grid, 0, i * grid, height], gridOptions));
         gridCanvas.add(new fabric.Line([0, i * grid, width, i * grid], gridOptions));
     }
+    
+    gridCanvas.add(new fabric.Line([0,0,48,0], gridOptionsBold));
+    gridCanvas.add(new fabric.Line([0,0,0,48], gridOptionsBold));
+    var text = new fabric.Text('1x1 m', { left: 3, top: 3, fontSize: 17 });
+    gridCanvas.add(text);
 };
 
 //Event listener for pressing the left mouse button
 canvas.on('mouse:down', function (options) {
     /*Return if we are in selection mode, i.e. selecting multiple objects
-     * This is true if the checkbox for multiple selection is checked
+     * This is true if the button for multiple selection is "checked green"
      * If not in selection mode, check if an object is selected.
      * If we have not selected an object, we are in drawing mode.
      */
@@ -413,9 +427,20 @@ updateButton.onclick = function () {
     saveCanvas();
 };
 
-//Activates selection mode when checkbox is checked
-checkbox.onchange = function () {
-    canvas.selection = checkbox.checked;
+//Activates selection mode when button for multiple selection is "checked green"
+selectionButton.onclick = function () {
+    if(selectionButton.getAttribute('class') === 'btn btn-default') {
+        selectionButton.setAttribute('class', 'btn btn-success');
+        drawButton.setAttribute('class', 'btn btn-default');
+        canvas.selection = true;
+    }
+};
+drawButton.onclick = function () {
+    if(drawButton.getAttribute('class') === 'btn btn-default') {
+        drawButton.setAttribute('class', 'btn btn-success');
+        selectionButton.setAttribute('class', 'btn btn-default');
+        canvas.selection = false;
+    }
 };
 
 /*
