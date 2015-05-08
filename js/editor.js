@@ -14,15 +14,18 @@ var ghostCanvas = new fabric.Canvas('ghostCanvas', {selection: false, width: 150
 var deleteButton = document.getElementById('btn-delete'),
         clearButton = document.getElementById('btn-clear'),
         clearAllButton = document.getElementById('btn-clear-all'),
-        updateButton = document.getElementById('btn-update'),
-        selectionButton = document.getElementById('btn-multiple'),
-        drawButton = document.getElementById('btn-draw'),
+        selectionButton = document.getElementById('btn-mode-selection'),
+        drawButton = document.getElementById('btn-mode-draw'),
         floorButton1 = document.getElementById('btn-floor-1'),
         floorButton2 = document.getElementById('btn-floor-2'),
         floorButton3 = document.getElementById('btn-floor-3'),
         floorButton4 = document.getElementById('btn-floor-4'),
         addFloorButton = document.getElementById('btn-floor-add'),
-        deleteFloorButton = document.getElementById('btn-delete-floor');
+        deleteFloorButton = document.getElementById('btn-delete-floor'),
+        matDrywallButton = document.getElementById('btn-mat-drywall'),
+        matConcreteButton = document.getElementById('btn-mat-concrete'),
+        matWoodButton = document.getElementById('btn-mat-wood'),
+        matGlassButton = document.getElementById('btn-mat-glass');
 var width = canvas.width;
 var height = canvas.height;
 var grid = 50; //Size of grid in px
@@ -35,7 +38,7 @@ var deletePermitted = false;
 
 // Runs the init function
 init();
-console.log(localStorage);
+
 
 //Run the initializing here
 function init() {
@@ -44,7 +47,7 @@ function init() {
     floorNumber = 1,
     currentFloors = 1;
     drawGrid();
-    loadFloors();
+    loadFloorButtons();
     loadCanvas();
 }
 
@@ -102,7 +105,7 @@ canvas.on('mouse:down', function (options) {
             perPixelTargetFind: true,
             visible: true,
             padding: 10,
-            material: 'gips',
+            material: 'drywall',
             floorNumber: floorNumber
         });
         canvas.add(line);
@@ -158,7 +161,7 @@ canvas.on('object:selected', function (options) {
     setTimeout(function() {
         deletePermitted = true;
     }, 500);
-    
+    loadMaterialButtons();
 });
 
 //Event listener for clearing a selection of an object
@@ -284,7 +287,7 @@ function deleteFloor() {
         //Save this number to localStorage
         localStorage.setItem("currentFloors", currentFloors);
         //Refresh the floornumber-menu
-        loadFloors();
+        loadFloorButtons();
         //Change view to floor #1
         //Could maybe implement to change it to one less than the one we removed
         //I.E: Remove floor 4, change to 3, remove floor 3, change to 2, etc
@@ -293,7 +296,7 @@ function deleteFloor() {
 };
 
 /*
- * 
+ * Function for viewing another floor
  * @param {type} floor - This is the floor number we are changing to
  * @param {type} skipCheck - Boolean for skipping check of floorNumber
  */
@@ -306,7 +309,7 @@ function changeFloor(floor, skipCheck) {
 
 //Function that loads the correct buttons in the floor-buttons-menu
 //Maybe rename this function
-function loadFloors() {
+function loadFloorButtons() {
     currentFloors = JSON.parse(localStorage.getItem("currentFloors"));
     if(currentFloors === null) {
         currentFloors = 1;
@@ -385,47 +388,79 @@ clearAllButton.onclick = function() {
     }
 };
 
-//Adding function to update button
-updateButton.onclick = function () {
-    var selector = document.getElementById("select-material");
-    var newMat = selector.options[selector.selectedIndex].value;
-    var color;
-    switch (newMat) {
-        case 'Gips':
-            color = 'black';
-            break;
-        case 'Tre':
-            color = 'brown';
-            break;
-        case 'Betong':
-            color = 'gray';
-            break;
-        case 'Glass':
-            color = 'blue';
-            break;
-        default:
-            color = 'black';
-            break;
+function loadMaterialButtons() {
+    var obj = canvas.getActiveObject();
+    if(obj) {
+        matConcreteButton.setAttribute('class', 'btn btn-default');
+        matDrywallButton.setAttribute('class', 'btn btn-default');
+        matGlassButton.setAttribute('class', 'btn btn-default');
+        matWoodButton.setAttribute('class', 'btn btn-default');
+        var buttons = [matDrywallButton, matConcreteButton, matWoodButton, matGlassButton];
+        var buttonPosition;
+
+        switch (obj.material) {
+            case 'drywall':
+                buttonPosition = 0;
+                break;
+            case 'concrete':
+                buttonPosition = 1;
+                break;
+            case 'wood':
+                buttonPosition = 2;
+                break;
+            case 'glass':
+                buttonPosition = 3;
+                break;
+            default:
+                buttonPosition = 0;
+                break;   
+        }
+        buttons[buttonPosition].setAttribute('class', 'btn btn-success');
+        
     }
-    /*
-     * This is a lot of the same code as the delete function, should be modified/merged in some how
-     * Also has some repeating code within itself
-     */
+}
+function updateMaterial(material, color) {
+    //Gray out the buttons
+    matConcreteButton.setAttribute('class', 'btn btn-default');
+    matDrywallButton.setAttribute('class', 'btn btn-default');
+    matGlassButton.setAttribute('class', 'btn btn-default');
+    matWoodButton.setAttribute('class', 'btn btn-default');
+    
+    
     if (canvas.getActiveGroup()) {
         var myGroup = canvas.getActiveGroup()._objects;
         for (var i = 0; i < myGroup.length; i++) {
             myGroup[i].set({
-                material: newMat,
+                material: material,
                 stroke: color
             });
         }
 
     } else {
         var obj = canvas.getActiveObject();
-        obj.set({material: newMat, stroke: color});
+        obj.set({material: material, stroke: color});
     }
     canvas.renderAll();
-    saveCanvas();
+    saveCanvas();  
+}
+
+matConcreteButton.onclick = function() {
+    updateMaterial('concrete', 'gray');
+    this.setAttribute('class', 'btn btn-success');
+};
+matDrywallButton.onclick = function() {
+    updateMaterial('drywall', 'black');
+    this.setAttribute('class', 'btn btn-success');
+};
+
+matGlassButton.onclick = function() {
+    updateMaterial('glass', 'blue');
+    this.setAttribute('class', 'btn btn-success');
+};
+
+matWoodButton.onclick = function() {
+    updateMaterial('wood', 'brown');
+    this.setAttribute('class', 'btn btn-success');
 };
 
 //Activates selection mode when button for multiple selection is "checked green"
@@ -436,6 +471,8 @@ selectionButton.onclick = function () {
         canvas.selection = true;
     }
 };
+
+//Activates drawing mode when button for drawing is "checked green".
 drawButton.onclick = function () {
     if(drawButton.getAttribute('class') === 'btn btn-default') {
         drawButton.setAttribute('class', 'btn btn-success');
@@ -590,52 +627,4 @@ fabric.Canvas.prototype._getActionFromCorner = function (target, corner) {
     }
     return action;
 };
-
-//This doesn't work right now
-/* 
-fabric.Canvas.prototype._setupCurrentTransform = function (e, target) {
-      if (!target) {
-        return;
-      }
-
-      var pointer = this.getPointer(e),
-          corner = target._findTargetCorner(this.getPointer(e, true)),
-          action = this._getActionFromCorner(target, corner),
-          origin = this._getOriginFromCorner(target, corner);
-
-          //MODIFICATIONS
-          if(action === 'remove') {
-              deleteSelObject();
-          }
-
-      this._currentTransform = {
-        target: target,
-        action: action,
-        scaleX: target.scaleX,
-        scaleY: target.scaleY,
-        offsetX: pointer.x - target.left,
-        offsetY: pointer.y - target.top,
-        originX: origin.x,
-        originY: origin.y,
-        ex: pointer.x,
-        ey: pointer.y,
-        left: target.left,
-        top: target.top,
-        theta: degreesToRadians(target.angle),
-        width: target.width * target.scaleX,
-        mouseXSign: 1,
-        mouseYSign: 1
-      };
-
-      this._currentTransform.original = {
-        left: target.left,
-        top: target.top,
-        scaleX: target.scaleX,
-        scaleY: target.scaleY,
-        originX: origin.x,
-        originY: origin.y
-      };
-
-      this._resetCurrentTransform(e);
-};*/
                             

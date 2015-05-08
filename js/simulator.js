@@ -18,7 +18,7 @@ var numberOfFloors = 1;
 
 init();
 animate();
-calcLengthRayCast();
+calculateSignalStrength();
 
 // Sets up the scene.
 function init() {
@@ -53,10 +53,6 @@ function init() {
     
     // Set the background color of the scene.
     renderer.setClearColor(0xFFFFFF, 1);
-
-    var axisHelper = new THREE.AxisHelper(5);
-    scene.add(axisHelper);
-
 
     linesArray = getLinesFrom2D();
     for (var i = 0; i < linesArray.length; i++) {
@@ -215,7 +211,7 @@ function onDocumentMouseUp(event) {
         if (ry < 0)
             return;
 
-        calcLengthRayCast();
+        calculateSignalStrength();
         group.visible = true;
     }
 
@@ -284,7 +280,7 @@ function drawWall(xPos, zPos, xSize, zSize, floorNumber, material) {
 
     //Create wall "mesh" from geometry and add wireframing
     var wall = new THREE.Mesh(wallGeometry, new THREE.MeshBasicMaterial({color: 0xCCCCCC, side: THREE.DoubleSide, opacity: 0.6, transparent: true}));
-    wall.wallMaterial = material;
+    wall.wallMaterialLoss = getMaterialLoss(material);
     var wireframe = new THREE.EdgesHelper(wall, 0x000000);
     walls.push(wall);
     scene.add(wireframe);
@@ -300,6 +296,7 @@ function drawWall(xPos, zPos, xSize, zSize, floorNumber, material) {
 //    scene.add(floor);
 //}
 
+//Finds the center point of building, and detects outline-walls
 function findCenterPoint() {
     var cL, cR, cT, cB,
             centerX, centerY, centerPoint;
@@ -347,24 +344,24 @@ function findCenterPoint() {
 }
 ;
 
+//Create points as objects based on walls position
 function addSomePoints() {
     somePoints = [];
     group = new THREE.Group();
     var routerPos = spheres[0].position,
-            rx = routerPos.x,
+            rx = Math.round(routerPos.x),
             ry = routerPos.y,
-            rz = routerPos.z;
-    var distance = 4;
+            rz = Math.round(routerPos.z);
+    var distance = 2;
 
-    for (var i = -20 + rx; i < 20 + rx; i += distance) {
-
+    for (var i = -20.5 + rx; i < 20.5 + rx; i += distance) {
+        
         if (i < outline[0].x / 50)
             continue;
         if (i > outline[3].x / 50)
             continue;
 
-        for (var j = -20 + rz; j < 20 + rz; j += distance) {
-
+        for (var j = -20.5 + rz ; j < 20.5 + rz; j += distance) {
             if (j < outline[1].y / 50)
                 continue;
             if (j > outline[2].y / 50)
@@ -385,8 +382,9 @@ function addSomePoints() {
     pointsToMesh();
 }
 
+//Converts point objects to Mesh-objects, and adds to scene
 function pointsToMesh() {
-    var geometry = new THREE.SphereGeometry(0.3, 32, 32);
+    var geometry = new THREE.SphereGeometry(0.2, 32, 32);
     allObjects = [];
     for (var i = 0; i < somePoints.length; i++) {
         var pointPos = somePoints[i],
@@ -402,79 +400,93 @@ function pointsToMesh() {
     scene.add(group);
 }
 
-function calcLengthRayCast() {
-    var milliWatts = 100; //2.4 GHz
+//Returns a decibel value (loss) based on wall material
+function getMaterialLoss(wallMaterial) {
+    var dbValue;
+    switch (wallMaterial) {
+        case 'drywall':
+            dbValue = 3;
+            break;
+        case 'wood':
+            dbValue = 4;
+            break;
+        case 'concrete':
+            dbValue = 12;
+            break;
+        case 'glass':
+            dbValue = 2;
+            break;
+        default:
+            dbValue = 0;
+            break;
+    }
+    return dbValue;
+}
+
+//Set a points signal status based on dbValue
+function setSignalStatus(point, dbValue) {
+    var color;
+    if (dbValue > -60) {
+        color = 0x2ae300;
+    }
+    else if (dbValue > -65) {
+        color = 0xa8e300;
+    }
+    else if (dbValue > -70) {
+        color = 0xfdff00;
+    }
+    else if (dbValue > -75) {
+        color = 0xffdb00;
+    }
+    else if (dbValue > -85) {
+        color = 0xff9a00;
+    }
+    else {
+        color = 0xff3300;
+    }
+    
+    point.material.color.setHex(color);
+}
+
+function calculateSignalStrength() {
+    var milliWatts = 100; //2.4 GHz. 5 GHz has a max value of 200 mw
     var eirp = 10 * Math.log10(milliWatts);
+    var antennaGain = 2;    
+    var cableLoss = 0;
+    var noise = -90; //Average noise level
+    
+    //Position of router
     var origin = spheres[0].position,
             rx = origin.x,
             ry = origin.y,
             rz = origin.z;
 
+    //Loop through every point of measure
     for (var i = 0; i < allObjects.length; i++) {
         var objectPos = allObjects[i].position,
                 sx = objectPos.x,
                 sy = objectPos.y,
                 sz = objectPos.z;
         var direction = new THREE.Vector3(sx - rx, sy - ry, sz - rz).normalize();
-        var raycaster = new THREE.Raycaster(origin, direction, 0, 100);
+        var distance = objectPos.distanceTo(origin);
+        var raycaster = new THREE.Raycaster(origin, direction, 0, (distance));
+        
+        
+        var fspl = 20 * Math.log10(distance) + 40.05;
+        var dbValue = eirp - fspl - cableLoss + antennaGain;
 
-        var intersects = raycaster.intersectObjects(allObjects);
         var intersectsWalls = raycaster.intersectObjects(walls, true);
-
-        if (intersects.length > 0) {
-            var first = intersects[0];
-            var distance = first.distance;
-            var loss = 20 * Math.log10(distance) + 40.05;
-            var dbValue = eirp - loss;
-            var numberOfWalls = intersectsWalls.length;
-            var wallMaterial;
-            
-            if(intersectsWalls.length > 0) {
-                for(var p=0;p<intersectsWalls.length;p++) {
-                    if(intersectsWalls[p].distance <= distance) {
-                        wallMaterial = intersectsWalls[p].object.wallMaterial;
-                        switch(wallMaterial) {
-                            case 'gips':
-                            case 'Gips':
-                                dbValue -= 3;
-                                break;
-                            case 'Tre':
-                                dbValue -= 4;
-                                break;
-                            case 'Betong':
-                                dbValue -= 12;
-                                break;
-                            case 'Glass':
-                                dbValue -= 2;
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-            dbValue -= numberOfWalls * 3; //Gips
-            dbValue -= 25; //Noise
-
-            if (dbValue > -60) {
-                first.object.material.color.setHex(0x2ae300);
-            } 
-            else if( dbValue > -65) {
-                first.object.material.color.setHex(0xa8e300);
-            }
-            else if (dbValue > -70) {
-                first.object.material.color.setHex(0xfdff00);
-            }
-            else if (dbValue > -75) {
-                first.object.material.color.setHex(0xffdb00);
-            }
-            else if (dbValue > -85) {
-                first.object.material.color.setHex(0xff9a00);
-            } 
-            else {
-                first.object.material.color.setHex(0xff3300);
+        if (intersectsWalls.length > 0) {
+            for (var p = 0; p < intersectsWalls.length; p++) {
+                //if (intersectsWalls[p].distance <= distance) {
+                    dbValue -= intersectsWalls[p].object.wallMaterialLoss;
+                //}
             }
         }
-
+        dbValue -= 20;  //Midlertidig noise value
+        
+        var SNR = dbValue - noise;
+        console.log(SNR);
+        setSignalStatus(allObjects[i], dbValue);  
     }
 }            
