@@ -54,7 +54,7 @@ function init() {
     // Set the background color of the scene.
     renderer.setClearColor(0xFFFFFF, 1);
 
-    linesArray = getLinesFrom2D();
+    linesArray = getLinesFromEditor();
     for (var i = 0; i < linesArray.length; i++) {
         var linje = linesArray[i],
                 refactor = 50,
@@ -103,7 +103,7 @@ function init() {
     scene.add(group);
     
     if(linesArray.length > 0) {
-        addSomePoints();
+        addPoints();
     }
     
                 
@@ -230,7 +230,7 @@ function animate() {
 ;
 
 // Pulls the drawn lines from local storage
-function getLinesFrom2D() {
+function getLinesFromEditor() {
     // Array of lines from all floors
     var lines = [];
     // currentFloors equals the number of floors drawn
@@ -345,7 +345,7 @@ function findCenterPoint() {
 ;
 
 //Create points as objects based on walls position
-function addSomePoints() {
+function addPoints() {
     somePoints = [];
     group = new THREE.Group();
     var routerPos = spheres[0].position,

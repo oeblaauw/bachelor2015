@@ -303,7 +303,7 @@ function deleteFloor() {
 function changeFloor(floor, skipCheck) {
     if(!skipCheck && floor === floorNumber) return;
     floorNumber = floor;
-    document.getElementById('floor-selected').innerHTML = "Etasje " + floorNumber;
+    //document.getElementById('floor-selected').innerHTML = "Etasje " + floorNumber;
     loadCanvas();
 }
 
