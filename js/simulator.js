@@ -37,8 +37,8 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     // Create a camera, zoom it out from the model a bit, and add it to the scene.
-    camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 0.1, 20000);
-    camera.position.set(0, 20, 50);
+    camera = new THREE.PerspectiveCamera(20, WIDTH / HEIGHT, 0.1, 20000);
+    camera.position.set(0, 40, 40);
     scene.add(camera);
 
     // Create an event listener that resizes the renderer with the browser window.
@@ -88,8 +88,9 @@ function init() {
     var pY = centerPoint.y / 50;
     
     //AddMoveable element
-    var geometry = new THREE.SphereGeometry(0.2, 32, 32);
-    var material = new THREE.MeshBasicMaterial({color: 0x383838});
+    var geometry = new THREE.BoxGeometry(1, 1, 1);
+    var texture = THREE.ImageUtils.loadTexture('img/wifi.png');
+    var material = new THREE.MeshBasicMaterial({map: texture});
     var sphere = new THREE.Mesh(geometry, material);
     sphere.position.set(pX, 1.2, pY);
     scene.add(sphere);
@@ -133,8 +134,8 @@ function onDocumentMouseMove(event) {
        
         var intersects = raycaster.intersectObject(plane);
         SELECTED.position.copy(intersects[ 0 ].point.sub(offset));
-        if(SELECTED.position.y < 0) {
-           SELECTED.position.y = 0;
+        if(SELECTED.position.y < 0.5) {
+           SELECTED.position.y = 0.5;
        }
         group.visible = false;
         return;
