@@ -10,21 +10,13 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
+        
+        <link href="css/simulator.css" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="css/bootstrap.min.css">
-        <style>
-            body {
-                padding-top: 50px;
-                padding-bottom: 20px;
-                position: fixed; 
-                overflow-y: scroll;
-                width: 100%;
-            }
-
-        </style>
+        <link rel="stylesheet" href="css/bootstrap.css">
         <link rel="stylesheet" href="css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="css/canvas.css">
-
+        
         <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
         <script src="js/three.min.js"></script>
         <script src="js/OrbitControls.js"></script>
@@ -40,17 +32,56 @@
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a class="navbar-brand" href="editor.html">Tilbake</a>
-                    <a class="navbar-brand" href="#">Hjelp</a>
+                    <a class="navbar-brand" href="#" onclick="document.getElementById('helpContent').style.display='inline'">Hjelp</a>
+                </div>
+                <div class="navbar-header navbar-right">
+                    <span class="navbar-text">Velg frekvens: </span>
+                    <div class="btn-group navbar-btn">
+                        <button id="btn-freq-24" class="btn btn-success">2.4 GHz</button>
+                        <button id="btn-freq-50" class="btn btn-default">5 GHz</button>
+                    </div>
                 </div>
             </div>
         </nav>
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-12">
+                <div id="helpContent">
+                    <a class="close" onclick="document.getElementById('helpContent').style.display='none'">×</a>
+                    <div id="userGuide">
+                        <h2>Veiledning</h2>
+                        <p>- Velg ønsket frekvens oppe i høyre hjørne</p>
+                        <p>- Flytt på den trådløse routeren for å se dekningen</p>
+                    </div>
+                    <hr>
+                    <div id="colorChart" class="">
+                        <h2>Fargekoder</h2>
+                        <div class="circle" style="background: #2ae300;"></div>
+                        <p>Svært godt (> -60 dBm)</p>
+
+                        <div class="circle" style="background: #a8e300;"></div> 
+                        <p>Godt (-65 til -60 dBm)</p>
+
+                        <div class="circle" style="background: #fdff00;"></div> 
+                        <p>Middels (-70 til -65 dBm)</p>
+
+                        <div class="circle" style="background: #ffdb00;"></div>
+                        <p>Lavt (-75 til -70 dBm)</p>
+
+                        <div class="circle" style="background: #ff9a00;"></div> 
+                        <p>Svært lavt (-85 til -75 dBm)</p>
+
+                        <div class="circle" style="background: #ff3300;"></div> 
+                        <p>Ingen signal (< -85 dBm)</p>
+
+                    </div>
+                </div>
+                
+                <div id="cont-sim">
                     <script src="js/simulator.js" type="text/javascript"></script>
                 </div>
+                
             </div>
         </div> <!-- /container -->   
-
+        
     </body>
 </html>

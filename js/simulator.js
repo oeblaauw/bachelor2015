@@ -1,4 +1,3 @@
-
 // Set up the scene, camera, and renderer as global variables.
 var scene, camera, renderer;
 var spheres = [],
@@ -14,6 +13,10 @@ var walls = [];
 var allObjects = [];
 var linesArray;
 var numberOfFloors = 1;
+var frequencyButtons = document.getElementsByName('frequency');
+var frequency = 2400000000;
+var freqBtn24 = document.getElementById('btn-freq-24');
+var freqBtn50 = document.getElementById('btn-freq-50');
 //var floorGeometries = [0];
 
 init();
@@ -449,9 +452,19 @@ function setSignalStatus(point, dbValue) {
 }
 
 function calculateSignalStrength() {
-    var milliWatts = 100; //2.4 GHz. 5 GHz has a max value of 200 mw
+    var milliWatts;
+    
+    //Check frequency
+    if(frequency === 2400000000) {
+        milliWatts = 100;
+    } else if(frequency === 5000000000){
+        //5.0 GHz
+        milliWatts = 200;
+    }
+    
+    //Convert mW to dBm
     var eirp = 10 * Math.log10(milliWatts);
-    var antennaGain = 2;    
+    var antennaGain = 0;    
     var cableLoss = 0;
     var noise = -90; //Average noise level
     
@@ -470,23 +483,38 @@ function calculateSignalStrength() {
         var direction = new THREE.Vector3(sx - rx, sy - ry, sz - rz).normalize();
         var distance = objectPos.distanceTo(origin);
         var raycaster = new THREE.Raycaster(origin, direction, 0, (distance));
-        
-        
-        var fspl = 20 * Math.log10(distance) + 40.05;
+               
+        var fspl = 20 * Math.log10(distance) + 20 * Math.log10(frequency) - 147.55;
         var dbValue = eirp - fspl - cableLoss + antennaGain;
 
         var intersectsWalls = raycaster.intersectObjects(walls, true);
         if (intersectsWalls.length > 0) {
             for (var p = 0; p < intersectsWalls.length; p++) {
-                //if (intersectsWalls[p].distance <= distance) {
-                    dbValue -= intersectsWalls[p].object.wallMaterialLoss;
-                //}
+                dbValue -= intersectsWalls[p].object.wallMaterialLoss;
             }
         }
         dbValue -= 20;  //Midlertidig noise value
         
         var SNR = dbValue - noise;
-        console.log(SNR);
         setSignalStatus(allObjects[i], dbValue);  
+        //setSignalStatus(allObjects[i], SNR);
     }
-}            
+}
+
+freqBtn24.onclick = function() {
+    if(this.getAttribute('class') === 'btn btn-default') {
+        this.setAttribute('class', 'btn btn-success');
+        freqBtn50.setAttribute('class', 'btn btn-default');
+        frequency = 2400000000;
+        calculateSignalStrength();
+    } 
+};
+
+freqBtn50.onclick = function() {
+    if(this.getAttribute('class') === 'btn btn-default') {
+        this.setAttribute('class', 'btn btn-success');
+        freqBtn24.setAttribute('class', 'btn btn-default');
+        frequency = 5000000000;
+        calculateSignalStrength();
+    } 
+};

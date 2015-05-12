@@ -8348,7 +8348,7 @@ fabric.PatternBrush = fabric.util.createClass(fabric.PencilBrush, /** @lends fab
           action = this._getActionFromCorner(target, corner),
           origin = this._getOriginFromCorner(target, corner);
 
-//MODIFIED BY BLAAUW
+        //MODIFIED BY BLAAUW
           if(action === 'remove') {
               deleteSelObject();
           }
