@@ -111,7 +111,7 @@ function init() {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     
     center = new THREE.Vector3(pX, 0, pY);
-    controls.center = (center);
+    controls.target = (center);
     controls.maxPolarAngle = Math.PI / 2;
 }
 
