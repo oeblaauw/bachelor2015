@@ -9,11 +9,14 @@
 
 // Set up the scene, camera, and renderer as global variables.
 var scene, camera, renderer;
-var plane,
-raycaster = new THREE.Raycaster(),
-mouse = new THREE.Vector2(),
-offset = new THREE.Vector3(),
-INTERSECTED, SELECTED;
+
+
+var plane,                           //for relative position tracking
+raycaster = new THREE.Raycaster(),   //object intersection control
+INTERSECTED, SELECTED,               //used with object intersection control
+mouse = new THREE.Vector2(),         //mouse cursor tracking   
+offset = new THREE.Vector3();        //used with cursor controller tracking
+
 
 /**
  * The router object
@@ -194,6 +197,10 @@ function init() {
     controls.maxPolarAngle = Math.PI / 2;
 };
 
+//Mouse cursor tracking and movement controls. 
+//The raycaster uses object intersection from cursor position to identify selected item.
+//The router object can be moved if selected, all other objects are static. 
+//When the router object has been placed signal strenght calculation is called.
 function onDocumentMouseMove(event) {
 
     event.preventDefault();
@@ -301,7 +308,6 @@ function onDocumentMouseUp(event) {
  */
 function animate() {
 
-    // Read more about requestAnimationFrame at http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
     requestAnimationFrame(animate);
 
     // Render the scene.
@@ -419,12 +425,12 @@ function drawWall(xStart, zStart, xStop, zStop, floorNumber, material) {
     wallGeometry.faces.push(new THREE.Face3(0, 1, 2));
     wallGeometry.faces.push(new THREE.Face3(0, 2, 3));
 
-    // Creates a wall "mesh" from Geometry, and adds wireframing.
-    // Sets the options of the material used in the walls.
+    // Creates a wall "mesh" from the geometry.
+    // Sets the options of the material used for the walls (transparent, grey).
     var wall = new THREE.Mesh(wallGeometry, new THREE.MeshBasicMaterial({
         color: 0xCCCCCC,
         side: THREE.DoubleSide,
-        opacity: 0.6,
+        opacity: 0.6,       
         transparent: true
     }));
 
@@ -432,7 +438,7 @@ function drawWall(xStart, zStart, xStop, zStop, floorNumber, material) {
     // by the wall's material
     wall.wallMaterialLoss = getMaterialLoss(material);
 
-    // Adds a wireframe (border) around the edges
+    // Adds a wireframe around the edges of the walls.
     var wireframe = new THREE.EdgesHelper(wall, 0x000000);
 
     // Push the wall to a global array, and add the wall to the scene
