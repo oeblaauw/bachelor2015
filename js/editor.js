@@ -1,7 +1,7 @@
 /**
  * 
  * @type fabric.Canvas
- * @description Main js file for project
+ * @description Javascript code for the editor
  * @author Øyvind Blaauw & Frederik Borgersen
  * @copy Øyvind Blaauw & Frederik Borgersen 2015
  * @version 1.0
@@ -11,25 +11,25 @@
 
 //Canvas objects
 var canvas = new fabric.Canvas('canvas', {selection: false, width: this.width, height: this.height, targetFindTolerance: 5}),
-        gridCanvas = new fabric.Canvas('gridCanvas', {selection: false, width: 1500, height: 1000}),
-        ghostCanvas = new fabric.Canvas('ghostCanvas', {selection: false, width: 1500, height: 1000});
+gridCanvas = new fabric.Canvas('gridCanvas', {selection: false, width: 1500, height: 1000}),
+ghostCanvas = new fabric.Canvas('ghostCanvas', {selection: false, width: 1500, height: 1000});
 
 //Buttons
 var deleteButton = document.getElementById('btn-delete'),
-        clearButton = document.getElementById('btn-clear'),
-        clearAllButton = document.getElementById('btn-clear-all'),
-        selectionButton = document.getElementById('btn-mode-selection'),
-        drawButton = document.getElementById('btn-mode-draw'),
-        floorButton1 = document.getElementById('btn-floor-1'),
-        floorButton2 = document.getElementById('btn-floor-2'),
-        floorButton3 = document.getElementById('btn-floor-3'),
-        floorButton4 = document.getElementById('btn-floor-4'),
-        addFloorButton = document.getElementById('btn-floor-add'),
-        deleteFloorButton = document.getElementById('btn-delete-floor'),
-        matDrywallButton = document.getElementById('btn-mat-drywall'),
-        matConcreteButton = document.getElementById('btn-mat-concrete'),
-        matWoodButton = document.getElementById('btn-mat-wood'),
-        matGlassButton = document.getElementById('btn-mat-glass');
+clearButton = document.getElementById('btn-clear'),
+clearAllButton = document.getElementById('btn-clear-all'),
+selectionButton = document.getElementById('btn-mode-selection'),
+drawButton = document.getElementById('btn-mode-draw'),
+floorButton1 = document.getElementById('btn-floor-1'),
+floorButton2 = document.getElementById('btn-floor-2'),
+floorButton3 = document.getElementById('btn-floor-3'),
+floorButton4 = document.getElementById('btn-floor-4'),
+addFloorButton = document.getElementById('btn-floor-add'),
+deleteFloorButton = document.getElementById('btn-delete-floor'),
+matDrywallButton = document.getElementById('btn-mat-drywall'),
+matConcreteButton = document.getElementById('btn-mat-concrete'),
+matWoodButton = document.getElementById('btn-mat-wood'),
+matGlassButton = document.getElementById('btn-mat-glass');
 
 /**
  * Width of canvas
