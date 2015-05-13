@@ -2,8 +2,8 @@
  * 
  * @type fabric.Canvas
  * @description Javascript code for the editor
- * @author Øyvind Blaauw & Frederik Borgersen
- * @copy Øyvind Blaauw & Frederik Borgersen 2015
+ * @author Oeyvind Blaauw & Frederik Borgersen
+ * @copy Oeyvind Blaauw & Frederik Borgersen - 2015
  * @version 1.0
  */
 

@@ -2,21 +2,41 @@
  * 
  * @type THREE.Scene
  * @description Javascript code for the simulator
- * @author Øyvind Blaauw & Frederik Borgersen
- * @copy Øyvind Blaauw & Frederik Borgersen - 2015
+ * @author Oeyvind Blaauw & Frederik Borgersen
+ * @copy Oeyvind Blaauw & Frederik Borgersen - 2015
  * @version 1.0
  */
+
+/** Variable initialization **/
 
 // Set up the scene, camera, and renderer as global variables.
 var scene, camera, renderer;
 
+/**
+ * Used for relative position tracking
+ * @type THREE.Mesh
+ */
+var plane = null;
 
-var plane,                           //for relative position tracking
-raycaster = new THREE.Raycaster(),   //object intersection control
-INTERSECTED, SELECTED,               //used with object intersection control
-mouse = new THREE.Vector2(),         //mouse cursor tracking   
-offset = new THREE.Vector3();        //used with cursor controller tracking
+/**
+ * Used for Object intersection control
+ * @type THREE.Raycaster
+ */
+var raycaster = new THREE.Raycaster(),
+        INTERSECTED = null,
+        SELECTED = null;
 
+/**
+ * Object that refers to the mouse pointer
+ * @type THREE.Vector2
+ */
+var mouse = new THREE.Vector2();
+
+/**
+ * An offset used with the mouse cursor controller tracking
+ * @type THREE.Vector3
+ */
+var offset = new THREE.Vector3();
 
 /**
  * The router object
@@ -98,15 +118,17 @@ init();
 animate();
 calculateSignalStrength();
 
-// Sets up the scene.
+/**
+ * Initializing function. Sets up the scene, camera and renderer
+ */
 function init() {
     /** Scene setup **/
-    
+
     // Create the scene and set the scene size.
     scene = new THREE.Scene();
     var WIDTH = window.innerWidth,
         HEIGHT = window.innerHeight;
-    
+
     // Create a renderer and add it to the DOM.
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(WIDTH, HEIGHT);
@@ -116,122 +138,133 @@ function init() {
     camera = new THREE.PerspectiveCamera(20, WIDTH / HEIGHT, 0.1, 20000);
     camera.position.set(0, 40, 40);
     scene.add(camera);
-    
+
     /** End of scene setup **/
-    
-    
+
+
     // Create an event listener that resizes the renderer with the browser window.
     window.addEventListener('resize', function () {
         renderer.setSize(WIDTH, HEIGHT);
         camera.aspect = WIDTH / HEIGHT;
         camera.updateProjectionMatrix();
     });
-    
+
     // Adds mouse listener to the renderer
     renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
     renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
     renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
-    
+
     // Sets the background color of the scene.
     renderer.setClearColor(0xFFFFFF, 1);
-    
+
     // Walls are prepared and drawn
     prepareWalls();
-    
+
     // Sets the center point of view
     var centerPoint = setCenterPoint();
     var pX = centerPoint.x / refactor;
     var pY = centerPoint.y / refactor;
-    
+
     /** Router setup **/
-    
+
     // The geometry is a box
     var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-    
+
     // A wifi image is added as the texture
     var texture = THREE.ImageUtils.loadTexture('img/wifi.png');
     var material = new THREE.MeshBasicMaterial({map: texture});
-    
+
     // The mesh object is created
     router = new THREE.Mesh(geometry, material);
-    
+
     // The router position relative to distance from floor in meters
     var routerHeight = 1.2;
-    
+
     // The router's position is set, and added to the scene.
     router.position.set(pX, routerHeight, pY);
     scene.add(router);
-    
+
     /** End of router setup **/
-    
+
     // Creates a plane. Used for moving an object relative to the plane.
     plane = new THREE.Mesh(
             new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
             new THREE.MeshBasicMaterial({
-                color: 0x000000, 
-                opacity: 0.25, 
+                color: 0x000000,
+                opacity: 0.25,
                 transparent: true})
             );
-    
+
     // Sets the plane visibility to false, and adds the plane to the scene
     plane.visible = false;
     scene.add(plane);
-    
+
     // Group is initialized. The group holds the measuring points. Added to scene.
     group = new THREE.Group();
     scene.add(group);
-    
+
     // Adds the measuring points if any lines exists
-    if(linesArray.length > 0) {
+    if (linesArray.length > 0) {
         addPoints();
-    } 
-                
+    }
+
     // Add OrbitControls to enable mouse zoom, drag and pan
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-    
+
     // Sets the center coordinates
     center = new THREE.Vector3(pX, 0, pY);
-    controls.target = (center);
-    
+    controls.center = center;
+
     // Limits the view angle (over and under building)
     controls.maxPolarAngle = Math.PI / 2;
-};
+}
+;
 
-//Mouse cursor tracking and movement controls. 
-//The raycaster uses object intersection from cursor position to identify selected item.
-//The router object can be moved if selected, all other objects are static. 
-//When the router object has been placed signal strenght calculation is called.
+/**
+ * Function for mouse event: Mouse move
+ * Updates the mouse pointer's coordinates
+ * Checks for router selection, and updates it's position
+ * @param {type} event
+ */
 function onDocumentMouseMove(event) {
 
     event.preventDefault();
 
+    // Get the mouse coordinates relative to window
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -((event.clientY - 51) / window.innerHeight) * 2 + 1;
 
-    //
-
+    // Updates the raycaster's viewpoint
     raycaster.setFromCamera(mouse, camera);
 
+    // If the router is already SELECTED
     if (SELECTED) {
-       
+
+        // Moves the router relative to the plane
         var intersects = raycaster.intersectObject(plane);
         SELECTED.position.copy(intersects[ 0 ].point.sub(offset));
-        if(SELECTED.position.y < 0.25) {
-           SELECTED.position.y = 0.25;
-       }
+
+        // Stops the router to be positioned below the floor
+        if (SELECTED.position.y < 0.25) {
+            SELECTED.position.y = 0.25;
+        }
+
+        // Hides the group of measuring points when moving router
         group.visible = false;
         return;
     }
-
+    
+    // This section helps to detect the router when moving the mouse
     var intersects = raycaster.intersectObject(router);
 
     if (intersects.length > 0) {
 
-        if (INTERSECTED != intersects[ 0 ].object) {
+        if (INTERSECTED !== intersects[ 0 ].object) {
 
-            if (INTERSECTED)
+            if (INTERSECTED) {
                 INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-
+            }
+            
             INTERSECTED = intersects[ 0 ].object;
             INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
 
@@ -248,59 +281,84 @@ function onDocumentMouseMove(event) {
         INTERSECTED = null;
 
     }
-
 }
 
+/**
+ * Function for mouse event: Button clicked.
+ * A raycaster checks if the user hits the router with mouse click
+ * @param {type} event
+ */
 function onDocumentMouseDown(event) {
 
     event.preventDefault();
 
+    // Vector used for raycaster, represent mouse coordinates
     var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
 
+    // Create a raycaster, used for checking router intersection
     var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
+    // The result of router intersection
     var intersects = raycaster.intersectObject(router);
 
+    // If ray intersected with router object
     if (intersects.length > 0) {
 
+        // Disable the OrbitControls, no rotation or zooming possible when router is hit
         controls.enabled = false;
 
+        // Sets the router as a SELECTED object
         SELECTED = intersects[ 0 ].object;
-        
+
         var intersects = raycaster.intersectObject(plane);
         offset.copy(intersects[ 0 ].point).sub(plane.position);
     }
-
 }
+;
 
+/**
+ * Function for mouse event: Button release
+ * Checks for router intersection, and updates values
+ * @param {type} event
+ */
 function onDocumentMouseUp(event) {
 
     event.preventDefault();
 
+    // Enables OrbitControls
     controls.enabled = true;
 
+    // Checks if the raycaster hit the router
     if (INTERSECTED) {
 
+        // Updates the plane
         plane.position.copy(INTERSECTED.position);
 
+        // Resets the SELECTED object
         SELECTED = null;
 
+        // Updates the router's position
         var routerPos = router.position,
                 rx = routerPos.x,
                 ry = routerPos.y,
                 rz = routerPos.z;
 
-        if (rx < outline[0].x / 50 || rx > outline[3].x / 50)
+        // Returns if the router is outside the building, or below
+        if (rx < outline[0].x / refactor || rx > outline[3].x / refactor)
             return;
-        if (rz < outline[1].y / 50 || rz > outline[2].y / 50)
+        if (rz < outline[1].y / refactor || rz > outline[2].y / refactor)
             return;
         if (ry < 0)
             return;
 
+        // If the router is inside the building, calculate new signal strengths
         calculateSignalStrength();
+
+        // Shows the measuring-points group
         group.visible = true;
     }
-};
+}
+;
 
 /**
  * Renders the scene and updates the renderer as needed.
@@ -314,45 +372,47 @@ function animate() {
     renderer.sortObjects = false;
     renderer.render(scene, camera);
     controls.update();
-};
+}
+;
 
 /**
  * getLinesFromEditor returns the drawn lines from editor
  * @returns {lines|getLinesFromEditor.lines|Array}
  */
 function getLinesFromEditor() {
-    
+
     // Create an empty array
     var lines = [];
-    
+
     // currentFloors equals the number of floors created
     numberOfFloors = localStorage.getItem('currentFloors');
 
     // Loop through the floors
     for (var i = 1; i <= numberOfFloors; i++) {
-        
+
         // Set a floor ID based on floor number
         var floorID = "myFloor" + i;
-        
+
         // Get the JSON Object from local Storage
         var json = JSON.parse(localStorage.getItem(floorID));
-        
+
         // If no data exists on that floor, return
         if (json === null)
             return;
-        
+
         // objects equals all the drawn lines from floor current floor
         var objects = json.objects;
-        
+
         // Loop through current floor, and push the lines to the array
         for (var j = 0; j < objects.length; j++) {
             lines.push(objects[j]);
         }
     }
-    
+
     // return array
     return lines;
-};
+}
+;
 
 /**
  * Gets the lines from the editor, and prepares the walls to be drawn as mesh objects.
@@ -363,36 +423,37 @@ function prepareWalls() {
     // Retrieve the lines from the editor
     linesArray = getLinesFromEditor();
     for (var i = 0; i < linesArray.length; i++) {
-        
+
         // Sets the needed variables
         var line = linesArray[i],
-            x1 = line.x1,
-            x2 = line.x2,
-            y1 = line.y1,
-            y2 = line.y2,
-            xPos = line.left,
-            xSize = line.width,
-            zPos = line.top,
-            zSize = line.height,
-            floorNumber = line.floorNumber,
-            material = line.material;
-    
+                x1 = line.x1,
+                x2 = line.x2,
+                y1 = line.y1,
+                y2 = line.y2,
+                xStart = line.left,
+                xStop = line.width,
+                zStart = line.top,
+                zStop = line.height,
+                floorNumber = line.floorNumber,
+                material = line.material;
+
         // Checks if the line is drawn from bottom-left corner to top-right corner
         if ((x2 > x1 && y2 < y1) || (x2 < x1 && y2 > y1)) {
-            zPos = line.top + line.height,
-                    zSize = -line.height;
+            zStart = line.top + line.height,
+                    zStop = -line.height;
         }
-        
+
         // Refactors the values to match the scene setup
-        xPos /= refactor,
-        zPos /= refactor,
-        xSize /= refactor,
-        zSize /= refactor;
+        xStart /= refactor,
+                zStart /= refactor,
+                xStop /= refactor,
+                zStop /= refactor;
 
         // Calls the drawWall method
-        drawWall(xPos, zPos, xSize, zSize, floorNumber, material);
+        drawWall(xStart, zStart, xStop, zStop, floorNumber, material);
     }
-};
+}
+;
 
 /**
  * Creates a wall based on input data of line
@@ -430,7 +491,7 @@ function drawWall(xStart, zStart, xStop, zStop, floorNumber, material) {
     var wall = new THREE.Mesh(wallGeometry, new THREE.MeshBasicMaterial({
         color: 0xCCCCCC,
         side: THREE.DoubleSide,
-        opacity: 0.6,       
+        opacity: 0.6,
         transparent: true
     }));
 
@@ -445,7 +506,8 @@ function drawWall(xStart, zStart, xStop, zStop, floorNumber, material) {
     walls.push(wall);
     scene.add(wireframe);
     scene.add(wall);
-};
+}
+;
 
 /**
  * Finds the center point of the building drawn in the editor.
@@ -512,7 +574,8 @@ function setCenterPoint() {
     centerPoint = new fabric.Point(centerX, centerY);
 
     return centerPoint;
-};
+}
+;
 
 /**
  * Function that place measure points evenly spread out
@@ -621,7 +684,8 @@ function pointsToMesh() {
 
     // Adds the group to the scene
     scene.add(group);
-};
+}
+;
 
 /**
  * Based on the wall material, returns a decibel value
@@ -651,7 +715,8 @@ function getMaterialLoss(wallMaterial) {
     }
 
     return dbValue;
-};
+}
+;
 
 /**
  * Sets a measure point's color based on signal strength (in dBm)
@@ -680,7 +745,8 @@ function setSignalStatus(point, dbValue) {
     }
 
     point.material.color.setHex(color);
-};
+}
+;
 
 /**
  * Calculates the signal strength of all the measuring points
@@ -751,16 +817,17 @@ function calculateSignalStrength() {
             }
         }
 
-        // Added to supplement for any interference
-        dbValue -= 20;
-
+        // Added to supplement for interference and noise
+        dbValue -= 10;
+        console.log(dbValue);
         // Calculates the Signal-to-Noise-ratio
         var SNR = dbValue - noise;
 
         // Sets the color of the point, based on dbValue
         setSignalStatus(measureObjectsMesh[i], dbValue);
     }
-};
+}
+;
 
 /**
  * Adds onclick function for the 2.4 GHz frequency button

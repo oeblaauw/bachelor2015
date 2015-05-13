@@ -66,27 +66,25 @@
                 <div class="span12 panel panel-default">
                     <div class="panel-heading">Verktøy:</div>
                     <div class="panel-body">
-                        <div class="span8">
-                            <div class="btn-group">
-                                <button id="btn-mode-draw" class="btn btn-default" title="Tegn">
-                                    <span id="span-draw" class="glyphicon glyphicon-pencil"></span>
-                                </button>
-                                <button id="btn-mode-selection" class="btn btn-default" title="Marker">
-                                    <span id="span-multiple" class="glyphicon glyphicon-hand-up"></span>
-                                </button>
+                        <div class="btn-group">
+                            <button id="btn-mode-draw" class="btn btn-default" title="Tegn">
+                                <span id="span-draw" class="glyphicon glyphicon-pencil"></span>
+                            </button>
+                            <button id="btn-mode-selection" class="btn btn-default" title="Marker">
+                                <span id="span-multiple" class="glyphicon glyphicon-hand-up"></span>
+                            </button>
+                        </div>
+
+                        <div id="selectionMenu" style="display:none">
+                            <span>Velg material:</span>
+                            <div class="btn-group">                                    
+                                <button id="btn-mat-drywall" class="btn btn-default" title="Gips">Gips</button>
+                                <button id="btn-mat-concrete" class="btn btn-default" title="Betong">Betong</button>
+                                <button id="btn-mat-wood" class="btn btn-default" title="Tre">Tre</button>
+                                <button id="btn-mat-glass" class="btn btn-default" title="Glass">Glass</button>
                             </div>
 
-                            <div id="selectionMenu" style="display:none">
-                                <span>Velg material:</span>
-                                <div class="btn-group">                                    
-                                    <button id="btn-mat-drywall" class="btn btn-default" title="Gips">Gips</button>
-                                    <button id="btn-mat-concrete" class="btn btn-default" title="Betong">Betong</button>
-                                    <button id="btn-mat-wood" class="btn btn-default" title="Tre">Tre</button>
-                                    <button id="btn-mat-glass" class="btn btn-default" title="Glass">Glass</button>
-                                </div>
-
-                                <button id="btn-delete" class="btn btn-warning">Slett markert</button>
-                            </div>
+                            <button id="btn-delete" class="btn btn-warning">Slett markert</button>
                         </div>
                     </div>
                 </div>
