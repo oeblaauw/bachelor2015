@@ -2,8 +2,8 @@
  * 
  * @type THREE.Scene
  * @description Javascript code for the simulator
- * @author Ã˜yvind Blaauw & Frederik Borgersen
- * @copy Ã˜yvind Blaauw & Frederik Borgersen - 2015
+ * @author Øyvind Blaauw & Frederik Borgersen
+ * @copy Øyvind Blaauw & Frederik Borgersen - 2015
  * @version 1.0
  */
 
@@ -146,7 +146,7 @@ function init() {
     /** Router setup **/
     
     // The geometry is a box
-    var geometry = new THREE.BoxGeometry(1, 1, 1);
+    var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
     
     // A wifi image is added as the texture
     var texture = THREE.ImageUtils.loadTexture('img/wifi.png');
@@ -216,8 +216,8 @@ function onDocumentMouseMove(event) {
        
         var intersects = raycaster.intersectObject(plane);
         SELECTED.position.copy(intersects[ 0 ].point.sub(offset));
-        if(SELECTED.position.y < 0.5) {
-           SELECTED.position.y = 0.5;
+        if(SELECTED.position.y < 0.25) {
+           SELECTED.position.y = 0.25;
        }
         group.visible = false;
         return;
