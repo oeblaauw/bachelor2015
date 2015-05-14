@@ -733,13 +733,7 @@ function setSignalStatus(point, dbValue) {
     }
     else if (dbValue > -70) {
         color = 0xfdff00;
-    }/*
-    else if (dbValue > -75) {
-        color = 0xffdb00;
     }
-    else if (dbValue > -80) {
-        color = 0xff3300;
-    }*/
     else {
         color = 0xff3300;
     }
