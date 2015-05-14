@@ -110,6 +110,12 @@ var freqBtn50 = document.getElementById('btn-freq-50');
  */
 var refactor = 50;
 
+/**
+ * Standard ceiling height in meters
+ * @type Number
+ */
+var ceilingHeight = 2.40;
+
 /** End of variable initialization **/
 
 /** Functions **/
@@ -178,7 +184,7 @@ function init() {
     router = new THREE.Mesh(geometry, material);
 
     // The router position relative to distance from floor in meters
-    var routerHeight = 1.2;
+    var routerHeight = ceilingHeight/2;
 
     // The router's position is set, and added to the scene.
     router.position.set(pX, routerHeight, pY);
@@ -466,12 +472,9 @@ function prepareWalls() {
  */
 function drawWall(xStart, zStart, xStop, zStop, floorNumber, material) {
 
-    // Sets the standard ceiling height
-    var height = 2.40;
-
     // Sets the start and stop position of the height
-    var yStart = (floorNumber - 1) * height;
-    var yStop = height * floorNumber;
+    var yStart = (floorNumber - 1) * ceilingHeight;
+    var yStop = ceilingHeight * floorNumber;
 
     // Creates new coordinates for X and Z. Used to create the geometry
     var xNew = xStart + xStop;
@@ -601,9 +604,6 @@ function addPoints() {
     // Distance from router in each direction
     var radius = 20.5;
 
-    // Standard ceiling height (in meters)
-    var height = 2.40;
-
     // For each distance in x direction
     for (var i = -radius + rx; i < radius + rx; i += distance) {
 
@@ -630,7 +630,7 @@ function addPoints() {
                 // Creates the point object
                 var point = {
                     x: i,
-                    y: k * height,
+                    y: k * ceilingHeight,
                     z: j
                 };
 
@@ -764,13 +764,19 @@ function calculateSignalStrength() {
     var eirp = 10 * Math.log10(milliWatts);
     var antennaGain = 0;
     var cableLoss = 0;
+    
+    // Sets the loss of signal through floor material, in dB
+    var floorMaterialLoss = 6;
 
     // Position of router
     var origin = router.position,
             rx = origin.x,
             ry = origin.y,
             rz = origin.z;
-
+    
+    // Determine which floor the router's positioned in
+    var routerFloor = Math.floor(ry / ceilingHeight) + 1;
+    
     // Loop through every measuring point
     for (var i = 0; i < measureObjectsMesh.length; i++) {
 
@@ -779,6 +785,15 @@ function calculateSignalStrength() {
                 sx = objectPos.x,
                 sy = objectPos.y,
                 sz = objectPos.z;
+        
+        // Determine which floor the measuring point locates to
+        var objectFloor = Math.floor(sy / ceilingHeight) + 1;
+
+        // Calculates the difference in number of floors between router and point
+        var floorDifference = Math.abs(objectFloor - routerFloor);
+
+        // Calculates the loss of signal through floor material, times number of floors
+        var lossInFloors = floorDifference * floorMaterialLoss;
 
         // Calculate the direction from router to point, unit vector
         var direction = new THREE.Vector3(sx - rx, sy - ry, sz - rz).normalize();
@@ -793,7 +808,7 @@ function calculateSignalStrength() {
         var fspl = 20 * Math.log10(distance) + 20 * Math.log10(frequency) - 147.55;
 
         // Calculates the signal strength (in dB)
-        var dbValue = eirp - fspl - cableLoss + antennaGain;
+        var dbValue = eirp - fspl - cableLoss + antennaGain - lossInFloors;
 
         // Checks for intersecting walls
         var intersectsWalls = raycaster.intersectObjects(walls, true);
