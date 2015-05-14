@@ -660,16 +660,6 @@ floorButton4.onclick = function () {
  */
 deleteButton.onclick = deleteSelObject;
 
-/**
- * Adds onclick function to the clearButton
- */
-clearButton.onclick = function () {
-    
-    // Asks the user to confirm
-    if (confirm("Er du sikker? Dette vil slette alt du har tegnet i denne etasjen.")) {
-        clearCanvas();
-    }
-};
 
 /**
  * Adds onclick function the clearAllButton
