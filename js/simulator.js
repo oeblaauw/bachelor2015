@@ -725,21 +725,21 @@ function getMaterialLoss(wallMaterial) {
  */
 function setSignalStatus(point, dbValue) {
     var color;
-    if (dbValue > -60) {
+    if (dbValue > -50) {
         color = 0x2ae300;
     }
-    else if (dbValue > -65) {
+    else if (dbValue > -60) {
         color = 0xa8e300;
     }
     else if (dbValue > -70) {
         color = 0xfdff00;
-    }
+    }/*
     else if (dbValue > -75) {
         color = 0xffdb00;
     }
-    else if (dbValue > -85) {
-        color = 0xff9a00;
-    }
+    else if (dbValue > -80) {
+        color = 0xff3300;
+    }*/
     else {
         color = 0xff3300;
     }
@@ -770,9 +770,6 @@ function calculateSignalStrength() {
     var eirp = 10 * Math.log10(milliWatts);
     var antennaGain = 0;
     var cableLoss = 0;
-
-    // Average noise level
-    var noise = -90;
 
     // Position of router
     var origin = router.position,
@@ -818,10 +815,7 @@ function calculateSignalStrength() {
         }
 
         // Added to supplement for interference and noise
-        dbValue -= 10;
-        console.log(dbValue);
-        // Calculates the Signal-to-Noise-ratio
-        var SNR = dbValue - noise;
+        dbValue -= 15;
 
         // Sets the color of the point, based on dbValue
         setSignalStatus(measureObjectsMesh[i], dbValue);

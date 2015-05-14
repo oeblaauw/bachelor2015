@@ -16,7 +16,6 @@ ghostCanvas = new fabric.Canvas('ghostCanvas', {selection: false, width: 1500, h
 
 //Buttons
 var deleteButton = document.getElementById('btn-delete'),
-clearButton = document.getElementById('btn-clear'),
 clearAllButton = document.getElementById('btn-clear-all'),
 selectionButton = document.getElementById('btn-mode-selection'),
 drawButton = document.getElementById('btn-mode-draw'),
