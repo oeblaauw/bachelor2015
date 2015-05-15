@@ -917,7 +917,7 @@ fabric.Object.prototype._drawControl = function (control, ctx, methodName, left,
     
     var size = this.cornerSize;
     var SelectedIconImage = new Image();
-    SelectedIconImage.src = "img/images.png";
+    SelectedIconImage.src = "img/delete.png";
     
     if (this.isControlVisible(control)) {
         this.transparentCorners || ctx.clearRect(left, top, size, size);

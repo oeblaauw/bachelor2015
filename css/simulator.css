@@ -24,10 +24,6 @@ body {
     z-index: 1; 
     background: #cccccc; 
 }
-
-#colorChart {
-    
-}
 .circle {
     width: 25px;
     height: 25px;
